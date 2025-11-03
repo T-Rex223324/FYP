@@ -179,6 +179,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef2d40d48403ba741b9405b74472bcf1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FoodPrefab: {fileID: 2420712989639592880, guid: 7c4bec17960bf8f4996b46c2ac689ff6, type: 3}
   Player: {fileID: 957377225}
   Width: 10
   Height: 10
@@ -218,8 +219,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91b7f0e0e66f6994fa5230c299d037ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  UIDoc: {fileID: 768006880}
+  FoodPrefab: {fileID: 2420712989639592880, guid: 7c4bec17960bf8f4996b46c2ac689ff6, type: 3}
   BoardManager: {fileID: 607935308}
   PlayerController: {fileID: 957377225}
+--- !u!1 &768006879
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 768006881}
+  - component: {fileID: 768006880}
+  m_Layer: 5
+  m_Name: UIDocument
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &768006880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768006879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PanelSettings: {fileID: 11400000, guid: db39c8119cb195a43b404e264bef9f52, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 734c90b535d8a3441b21bcbea046e747, type: 3}
+  m_SortingOrder: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+--- !u!4 &768006881
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768006879}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &957377222
 GameObject:
   m_ObjectHideFlags: 0
@@ -486,8 +540,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91b7f0e0e66f6994fa5230c299d037ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BoardManager: {fileID: 0}
-  PlayerController: {fileID: 0}
+  UIDoc: {fileID: 768006880}
+  FoodPrefab: {fileID: 0}
+  BoardManager: {fileID: 607935308}
+  PlayerController: {fileID: 957377225}
 --- !u!4 &2073671461
 Transform:
   m_ObjectHideFlags: 0
@@ -530,7 +586,7 @@ Transform:
   m_GameObject: {fileID: 2113512926}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1, y: -1.28, z: 0}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -634,3 +690,4 @@ SceneRoots:
   - {fileID: 607935307}
   - {fileID: 957377224}
   - {fileID: 2073671461}
+  - {fileID: 768006881}
