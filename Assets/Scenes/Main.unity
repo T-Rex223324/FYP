@@ -130,8 +130,8 @@ GameObject:
   - component: {fileID: 607935307}
   - component: {fileID: 607935306}
   - component: {fileID: 607935308}
+  - component: {fileID: 607935313}
   - component: {fileID: 607935309}
-  - component: {fileID: 607935310}
   m_Layer: 0
   m_Name: BoardManager
   m_TagString: Untagged
@@ -179,7 +179,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef2d40d48403ba741b9405b74472bcf1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FoodPrefab: {fileID: 2420712989639592880, guid: 7c4bec17960bf8f4996b46c2ac689ff6, type: 3}
+  WallPrefab: {fileID: 0}
+  FoodPrefab: {fileID: 9081462095019716144, guid: 7c4bec17960bf8f4996b46c2ac689ff6, type: 3}
   Player: {fileID: 957377225}
   Width: 10
   Height: 10
@@ -207,7 +208,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d38220431955674ea65e9c23859d3ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &607935310
+--- !u!114 &607935313
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -220,7 +221,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UIDoc: {fileID: 768006880}
-  FoodPrefab: {fileID: 2420712989639592880, guid: 7c4bec17960bf8f4996b46c2ac689ff6, type: 3}
   BoardManager: {fileID: 607935308}
   PlayerController: {fileID: 957377225}
 --- !u!1 &768006879
@@ -541,7 +541,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UIDoc: {fileID: 768006880}
-  FoodPrefab: {fileID: 0}
   BoardManager: {fileID: 607935308}
   PlayerController: {fileID: 957377225}
 --- !u!4 &2073671461
