@@ -1,19 +1,19 @@
 fileFormatVersion: 2
-guid: 1ba5d4b00b16dc7409cf4afa90f965cd
+guid: 1dc547deb5e504e4ea3a177a69659904
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7096123821722747915
-    second: Walkanimtion37x32 1_0
+      213: -7808351828037446898
+    second: walk12_0
   - first:
-      213: 156812234971212496
-    second: Walkanimtion37x32 1_1
+      213: 7345484731259774276
+    second: walk12_1
   - first:
-      213: -6164863650918906561
-    second: Walkanimtion37x32 1_2
+      213: 4459845112397753572
+    second: walk12_2
   - first:
-      213: 7407662384242713224
-    second: Walkanimtion37x32 1_3
+      213: -9057770150635720017
+    second: walk12_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -33,7 +33,7 @@ TextureImporter:
     heightScale: 0.25
     normalMapFilter: 0
     flipGreenChannel: 0
-  isReadable: 1
+  isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
@@ -135,13 +135,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Walkanimtion37x32 1_0
+      name: walk12_0
       rect:
         serializedVersion: 2
-        x: 11
-        y: 131
-        width: 106
-        height: 125
+        x: 152
+        y: 503
+        width: 80
+        height: 95
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -150,20 +150,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5fb37042bf0858d90800000000000000
-      internalID: -7096123821722747915
+      spriteID: e035e80026923a390800000000000000
+      internalID: -7808351828037446898
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Walkanimtion37x32 1_1
+      name: walk12_1
       rect:
         serializedVersion: 2
-        x: 135
-        y: 131
-        width: 121
-        height: 125
+        x: 527
+        y: 518
+        width: 92
+        height: 98
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -172,20 +172,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0dae4e995eb1d2200800000000000000
-      internalID: 156812234971212496
+      spriteID: 4456bcde17760f560800000000000000
+      internalID: 7345484731259774276
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Walkanimtion37x32 1_2
+      name: walk12_2
       rect:
         serializedVersion: 2
-        x: 7
-        y: 3
-        width: 110
-        height: 126
+        x: 146
+        y: 110
+        width: 83
+        height: 98
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -194,20 +194,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f35c24e1c21027aa0800000000000000
-      internalID: -6164863650918906561
+      spriteID: 4eceabd108d84ed30800000000000000
+      internalID: 4459845112397753572
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Walkanimtion37x32 1_3
+      name: walk12_3
       rect:
         serializedVersion: 2
-        x: 139
-        y: 3
-        width: 106
-        height: 126
+        x: 524
+        y: 125
+        width: 80
+        height: 98
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -216,8 +216,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8826fc4e0bd4dc660800000000000000
-      internalID: 7407662384242713224
+      spriteID: fa2b832c9065c4280800000000000000
+      internalID: -9057770150635720017
       vertices: []
       indices: 
       edges: []
@@ -235,11 +235,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      Walkanimtion37x32 1_0: -7096123821722747915
-      Walkanimtion37x32 1_1: 156812234971212496
-      Walkanimtion37x32 1_2: -6164863650918906561
-      Walkanimtion37x32 1_3: 7407662384242713224
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
