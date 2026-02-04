@@ -183,6 +183,7 @@ MonoBehaviour:
   - {fileID: 2042946378}
   ExitCellPrefab: {fileID: 6680761949727546545, guid: 627f3f0e763014f4685bb87d67484c27, type: 3}
   FoodPrefab: {fileID: 9081462095019716144, guid: 7c4bec17960bf8f4996b46c2ac689ff6, type: 3}
+  EnemyPrefab: {fileID: 8267937722801308254, guid: e6923bdcb466a5447bd8ba9e70de8ad5, type: 3}
   Player: {fileID: 957377225}
   Width: 10
   Height: 10

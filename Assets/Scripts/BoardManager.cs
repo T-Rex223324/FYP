@@ -13,6 +13,11 @@ public class BoardManager : MonoBehaviour
     public WallObject[] WallPrefabs;
     public ExitCellObject ExitCellPrefab;
     public FoodObject FoodPrefab;
+
+    // === FIX: Use GameObject instead of Enemy to fix assignment issues ===
+    public GameObject EnemyPrefab;
+    // ====================================================================
+
     public PlayerController Player;
 
     private CellData[,] m_BoardData;
@@ -63,12 +68,11 @@ public class BoardManager : MonoBehaviour
 
         GenerateWall();
         GenerateFood();
+        GenerateEnemy();
     }
 
-    // === NEW FUNCTION: Cleans up the previous level ===
     public void Clean()
     {
-        // If there is no board data (first run), exit early
         if (m_BoardData == null)
             return;
 
@@ -80,16 +84,13 @@ public class BoardManager : MonoBehaviour
 
                 if (cellData.ContainedObject != null)
                 {
-                    // Destroy the GameObject (Food, Wall, Exit) physically from the scene
                     Destroy(cellData.ContainedObject.gameObject);
                 }
 
-                // Remove the tile visuals (set it to null/empty)
                 SetCellTile(new Vector2Int(x, y), null);
             }
         }
     }
-    // ================================================
 
     public Vector3 CellToWorld(Vector2Int cellIndex)
     {
@@ -123,6 +124,8 @@ public class BoardManager : MonoBehaviour
         int foodCount = 5;
         for (int i = 0; i < foodCount; ++i)
         {
+            if (m_EmptyCellsList.Count == 0) break;
+
             int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
@@ -137,6 +140,8 @@ public class BoardManager : MonoBehaviour
         int wallCount = Random.Range(6, 10);
         for (int i = 0; i < wallCount; ++i)
         {
+            if (m_EmptyCellsList.Count == 0) break;
+
             int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
@@ -144,6 +149,33 @@ public class BoardManager : MonoBehaviour
             WallObject prefab = WallPrefabs[Random.Range(0, WallPrefabs.Length)];
             WallObject newWall = Instantiate(prefab);
             AddObject(newWall, coord);
+        }
+    }
+
+    void GenerateEnemy()
+    {
+        int enemyCount = 3;
+        for (int i = 0; i < enemyCount; ++i)
+        {
+            if (m_EmptyCellsList.Count == 0) break;
+
+            int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
+            Vector2Int coord = m_EmptyCellsList[randomIndex];
+            m_EmptyCellsList.RemoveAt(randomIndex);
+
+            // === FIX: Instantiate GameObject, then get the Enemy script ===
+            GameObject newEnemyObj = Instantiate(EnemyPrefab);
+            Enemy newEnemy = newEnemyObj.GetComponent<Enemy>();
+
+            // Safety check: if the prefab doesn't have the script, log error
+            if (newEnemy != null)
+            {
+                AddObject(newEnemy, coord);
+            }
+            else
+            {
+                Debug.LogError("The Enemy Prefab does not have the Enemy script attached!");
+            }
         }
     }
 

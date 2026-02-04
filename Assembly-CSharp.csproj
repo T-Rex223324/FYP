@@ -65,6 +65,7 @@
     <Compile Include="Assets\Scripts\WallObject.cs" />
     <Compile Include="Assets\Scripts\FoodObject.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
+    <Compile Include="Assets\Scripts\Enemy.cs" />
     <Compile Include="Assets\Scripts\ExitCellObject.cs" />
     <Compile Include="Assets\Scripts\TurnManager.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
