@@ -10,14 +10,16 @@ public class BoardManager : MonoBehaviour
         public CellObject ContainedObject;
     }
 
+    // === CHALLENGE 2: Use an Array instead of a single object ===
+    public GameObject[] FoodPrefabs;
+
+    // === CHALLENGE 1: Add Range variables ===
+    public int MinFoodCount = 5;
+    public int MaxFoodCount = 10;
+
     public WallObject[] WallPrefabs;
     public ExitCellObject ExitCellPrefab;
-    public FoodObject FoodPrefab;
-
-    // === FIX: Use GameObject instead of Enemy to fix assignment issues ===
     public GameObject EnemyPrefab;
-    // ====================================================================
-
     public PlayerController Player;
 
     private CellData[,] m_BoardData;
@@ -73,20 +75,17 @@ public class BoardManager : MonoBehaviour
 
     public void Clean()
     {
-        if (m_BoardData == null)
-            return;
+        if (m_BoardData == null) return;
 
         for (int y = 0; y < Height; ++y)
         {
             for (int x = 0; x < Width; ++x)
             {
                 var cellData = m_BoardData[x, y];
-
                 if (cellData.ContainedObject != null)
                 {
                     Destroy(cellData.ContainedObject.gameObject);
                 }
-
                 SetCellTile(new Vector2Int(x, y), null);
             }
         }
@@ -106,10 +105,17 @@ public class BoardManager : MonoBehaviour
         return m_BoardData[cellIndex.x, cellIndex.y];
     }
 
+    public void SetCellTile(Vector2Int cellIndex, Tile tile)
+    {
+        m_Tilemap.SetTile(new Vector3Int(cellIndex.x, cellIndex.y, 0), tile);
+    }
+
+    // === MISSING FUNCTION ADDED HERE ===
     public Tile GetCellTile(Vector2Int cellIndex)
     {
         return m_Tilemap.GetTile<Tile>(new Vector3Int(cellIndex.x, cellIndex.y, 0));
     }
+    // ===================================
 
     void AddObject(CellObject obj, Vector2Int coord)
     {
@@ -121,7 +127,8 @@ public class BoardManager : MonoBehaviour
 
     void GenerateFood()
     {
-        int foodCount = 5;
+        int foodCount = Random.Range(MinFoodCount, MaxFoodCount + 1);
+
         for (int i = 0; i < foodCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0) break;
@@ -130,8 +137,10 @@ public class BoardManager : MonoBehaviour
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
 
-            FoodObject newFood = Instantiate(FoodPrefab);
-            AddObject(newFood, coord);
+            GameObject prefabToSpawn = FoodPrefabs[Random.Range(0, FoodPrefabs.Length)];
+
+            GameObject newFood = Instantiate(prefabToSpawn);
+            AddObject(newFood.GetComponent<FoodObject>(), coord);
         }
     }
 
@@ -154,7 +163,7 @@ public class BoardManager : MonoBehaviour
 
     void GenerateEnemy()
     {
-        int enemyCount = 3;
+        int enemyCount = Random.Range(2, 5);
         for (int i = 0; i < enemyCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0) break;
@@ -163,24 +172,10 @@ public class BoardManager : MonoBehaviour
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
 
-            // === FIX: Instantiate GameObject, then get the Enemy script ===
             GameObject newEnemyObj = Instantiate(EnemyPrefab);
             Enemy newEnemy = newEnemyObj.GetComponent<Enemy>();
 
-            // Safety check: if the prefab doesn't have the script, log error
-            if (newEnemy != null)
-            {
-                AddObject(newEnemy, coord);
-            }
-            else
-            {
-                Debug.LogError("The Enemy Prefab does not have the Enemy script attached!");
-            }
+            if (newEnemy != null) AddObject(newEnemy, coord);
         }
-    }
-
-    public void SetCellTile(Vector2Int cellIndex, Tile tile)
-    {
-        m_Tilemap.SetTile(new Vector3Int(cellIndex.x, cellIndex.y, 0), tile);
     }
 }
