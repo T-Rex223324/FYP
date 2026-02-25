@@ -5,8 +5,16 @@ public class Enemy : CellObject
     public int Health = 3;
     private int m_CurrentHealth;
 
+    // === NEW VARIABLES FOR ANIMATION & MOVEMENT ===
+    private Animator m_Animator;
+    private bool m_IsMoving;
+    private Vector3 m_MoveTarget;
+    public float MoveSpeed = 5.0f; // Keep this the same as the Player's speed!
+    // ==============================================
+
     private void Awake()
     {
+        m_Animator = GetComponent<Animator>(); // Get the Animator
         GameManager.Instance.TurnManager.OnTick += TurnHappened;
     }
 
@@ -21,9 +29,29 @@ public class Enemy : CellObject
         m_CurrentHealth = Health;
     }
 
+    // === NEW: Update loop for smooth movement ===
+    private void Update()
+    {
+        if (m_IsMoving)
+        {
+            // Slide smoothly towards the target
+            transform.position = Vector3.MoveTowards(transform.position, m_MoveTarget, MoveSpeed * Time.deltaTime);
+
+            if (transform.position == m_MoveTarget)
+            {
+                m_IsMoving = false;
+                if (m_Animator != null) m_Animator.SetBool("Moving", false);
+            }
+        }
+    }
+    // ============================================
+
     public override bool PlayerWantsToEnter()
     {
         m_CurrentHealth -= 1;
+
+        // Optional: You could trigger an enemy "Hit" animation here if you make one!
+
         if (m_CurrentHealth <= 0)
         {
             Destroy(gameObject);
@@ -36,9 +64,7 @@ public class Enemy : CellObject
         var board = GameManager.Instance.BoardManager;
         var targetCell = board.GetCellData(coord);
 
-        if (targetCell == null
-            || !targetCell.Passable
-            || targetCell.ContainedObject != null)
+        if (targetCell == null || !targetCell.Passable || targetCell.ContainedObject != null)
         {
             return false;
         }
@@ -48,7 +74,13 @@ public class Enemy : CellObject
 
         targetCell.ContainedObject = this;
         m_Cell = coord;
-        transform.position = board.CellToWorld(coord);
+
+        // === CHANGED: Smooth Movement Setup ===
+        m_MoveTarget = board.CellToWorld(coord);
+        m_IsMoving = true;
+        if (m_Animator != null) m_Animator.SetBool("Moving", true);
+        // ======================================
+
         return true;
     }
 
@@ -62,46 +94,35 @@ public class Enemy : CellObject
         int absXDist = Mathf.Abs(xDist);
         int absYDist = Mathf.Abs(yDist);
 
-        if ((xDist == 0 && absYDist == 1)
-            || (yDist == 0 && absXDist == 1))
+        if ((xDist == 0 && absYDist == 1) || (yDist == 0 && absXDist == 1))
         {
-            // Attack player!
-            GameManager.Instance.ChangeFood(-3);
+            // === CHANGED: Attack the Player ===
+            if (m_Animator != null) m_Animator.SetTrigger("Attack"); // Play Zombie Attack Animation
+            GameManager.Instance.PlayerController.TakeDamage(3); // Tell Player to take damage
+            // ==================================
         }
         else
         {
             if (absXDist > absYDist)
             {
-                if (!TryMoveInX(xDist))
-                {
-                    TryMoveInY(yDist);
-                }
+                if (!TryMoveInX(xDist)) TryMoveInY(yDist);
             }
             else
             {
-                if (!TryMoveInY(yDist))
-                {
-                    TryMoveInX(xDist);
-                }
+                if (!TryMoveInY(yDist)) TryMoveInX(xDist);
             }
         }
     }
 
     bool TryMoveInX(int xDist)
     {
-        if (xDist > 0)
-        {
-            return MoveTo(m_Cell + Vector2Int.right);
-        }
+        if (xDist > 0) return MoveTo(m_Cell + Vector2Int.right);
         return MoveTo(m_Cell + Vector2Int.left);
     }
 
     bool TryMoveInY(int yDist)
     {
-        if (yDist > 0)
-        {
-            return MoveTo(m_Cell + Vector2Int.up);
-        }
+        if (yDist > 0) return MoveTo(m_Cell + Vector2Int.up);
         return MoveTo(m_Cell + Vector2Int.down);
     }
 }

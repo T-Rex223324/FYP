@@ -65,6 +65,17 @@ public class PlayerController : MonoBehaviour
         m_IsGameOver = true;
     }
 
+    // === NEW FUNCTION: Called by the Enemy when they attack ===
+    public void TakeDamage(int damageAmount)
+    {
+        // Play the "Hit" or "Damage" animation
+        m_Animator.SetTrigger("Hit");
+
+        // Reduce food
+        GameManager.Instance.ChangeFood(-damageAmount);
+    }
+    // ==========================================================
+
     private void Update()
     {
         if (m_Board == null) return;
@@ -130,10 +141,18 @@ public class PlayerController : MonoBehaviour
                 {
                     MoveTo(newCellTarget, false);
                 }
-                else if (cellData.ContainedObject.PlayerWantsToEnter())
+                else
                 {
-                    MoveTo(newCellTarget, false);
-                    // PlayerEntered() is called after movement finishes in the block above
+                    bool canEnter = cellData.ContainedObject.PlayerWantsToEnter();
+
+                    if (canEnter)
+                    {
+                        MoveTo(newCellTarget, false);
+                    }
+                    else
+                    {
+                        m_Animator.SetTrigger("Attack");
+                    }
                 }
             }
         }

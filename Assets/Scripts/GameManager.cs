@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
         m_GameOverPanel.style.visibility = Visibility.Hidden;
 
         m_CurrentLevel = 1;
-        m_FoodAmount = 20;
+        m_FoodAmount = 100;
         m_FoodLabel.text = "Food : " + m_FoodAmount;
 
         BoardManager.Clean();
