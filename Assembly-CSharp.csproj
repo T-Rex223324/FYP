@@ -69,6 +69,7 @@
     <Compile Include="Assets\Scripts\ExitCellObject.cs" />
     <Compile Include="Assets\Scripts\TurnManager.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
+    <Compile Include="Assets\Scripts\CameraFollow.cs" />
     <Compile Include="Assets\Scripts\BoardManager.cs" />
   </ItemGroup>
   <ItemGroup>

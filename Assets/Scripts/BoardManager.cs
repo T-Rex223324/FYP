@@ -10,10 +10,8 @@ public class BoardManager : MonoBehaviour
         public CellObject ContainedObject;
     }
 
-    // === CHALLENGE 2: Use an Array instead of a single object ===
     public GameObject[] FoodPrefabs;
 
-    // === CHALLENGE 1: Add Range variables ===
     public int MinFoodCount = 5;
     public int MaxFoodCount = 10;
 
@@ -27,13 +25,28 @@ public class BoardManager : MonoBehaviour
     private Grid m_Grid;
     private List<Vector2Int> m_EmptyCellsList;
 
+    // We keep these public so we can see them change in the Inspector!
     public int Width;
     public int Height;
     public Tile[] GroundTiles;
     public Tile[] WallTiles;
 
-    public void Init()
+    // === CHANGED: Now accepts the current level ===
+    public void Init(int currentLevel)
     {
+        // 1. Find where we are in the 10-day cycle (0 to 9)
+        int cycleDay = (currentLevel - 1) % 10;
+
+        // 2. Divide by 3 to increase the size every 3rd day
+        int sizeIncrease = (cycleDay + 1) / 3;
+
+        // 3. Apply the dynamic size (starts at 8, maxes at 11)
+        int dynamicSize = 8 + sizeIncrease;
+
+        Width = dynamicSize;
+        Height = dynamicSize;
+        // ==============================================
+
         m_Tilemap = GetComponentInChildren<Tilemap>();
         m_Grid = GetComponentInChildren<Grid>();
         m_EmptyCellsList = new List<Vector2Int>();
@@ -71,6 +84,18 @@ public class BoardManager : MonoBehaviour
         GenerateWall();
         GenerateFood();
         GenerateEnemy();
+
+        // === NEW: Auto-Center Camera ===
+        // Find the exact middle of the board
+        float centerX = (Width - 1) / 2.0f;
+        float centerY = (Height - 1) / 2.0f;
+
+        // Move the camera to the center (Keep Z at -10 so it can see the 2D objects)
+        Camera.main.transform.position = new Vector3(centerX, centerY, -10f);
+
+        // Zoom the camera out to fit the new size (+ 2.0f adds some padding for the UI text)
+        Camera.main.orthographicSize = (Height / 2.0f) + 2.0f;
+        // ===============================
     }
 
     public void Clean()
@@ -110,12 +135,10 @@ public class BoardManager : MonoBehaviour
         m_Tilemap.SetTile(new Vector3Int(cellIndex.x, cellIndex.y, 0), tile);
     }
 
-    // === MISSING FUNCTION ADDED HERE ===
     public Tile GetCellTile(Vector2Int cellIndex)
     {
         return m_Tilemap.GetTile<Tile>(new Vector3Int(cellIndex.x, cellIndex.y, 0));
     }
-    // ===================================
 
     void AddObject(CellObject obj, Vector2Int coord)
     {
