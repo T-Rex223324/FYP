@@ -25,27 +25,25 @@ public class BoardManager : MonoBehaviour
     private Grid m_Grid;
     private List<Vector2Int> m_EmptyCellsList;
 
-    // We keep these public so we can see them change in the Inspector!
+    // Keep track of where we are in the 1-10 loop
+    private int m_CurrentDayCycle;
+
     public int Width;
     public int Height;
     public Tile[] GroundTiles;
     public Tile[] WallTiles;
 
-    // === CHANGED: Now accepts the current level ===
     public void Init(int currentLevel)
     {
-        // 1. Find where we are in the 10-day cycle (0 to 9)
-        int cycleDay = (currentLevel - 1) % 10;
+        // Calculate our current day in the 1 to 10 loop
+        m_CurrentDayCycle = ((currentLevel - 1) % 10) + 1;
 
-        // 2. Divide by 3 to increase the size every 3rd day
-        int sizeIncrease = (cycleDay + 1) / 3;
-
-        // 3. Apply the dynamic size (starts at 8, maxes at 11)
+        // Increase size on Day 3, Day 6, and Day 9. Day 10 stays the same as 9.
+        int sizeIncrease = m_CurrentDayCycle / 3;
         int dynamicSize = 8 + sizeIncrease;
 
         Width = dynamicSize;
         Height = dynamicSize;
-        // ==============================================
 
         m_Tilemap = GetComponentInChildren<Tilemap>();
         m_Grid = GetComponentInChildren<Grid>();
@@ -85,17 +83,11 @@ public class BoardManager : MonoBehaviour
         GenerateFood();
         GenerateEnemy();
 
-        // === NEW: Auto-Center Camera ===
-        // Find the exact middle of the board
+        // Auto-Center Camera
         float centerX = (Width - 1) / 2.0f;
         float centerY = (Height - 1) / 2.0f;
-
-        // Move the camera to the center (Keep Z at -10 so it can see the 2D objects)
         Camera.main.transform.position = new Vector3(centerX, centerY, -10f);
-
-        // Zoom the camera out to fit the new size (+ 2.0f adds some padding for the UI text)
         Camera.main.orthographicSize = (Height / 2.0f) + 2.0f;
-        // ===============================
     }
 
     public void Clean()
@@ -150,7 +142,9 @@ public class BoardManager : MonoBehaviour
 
     void GenerateFood()
     {
-        int foodCount = Random.Range(MinFoodCount, MaxFoodCount + 1);
+        // === CHANGED: Add a little extra food based on map size so it doesn't look empty ===
+        int sizeIncrease = m_CurrentDayCycle / 3;
+        int foodCount = Random.Range(MinFoodCount + sizeIncrease, MaxFoodCount + sizeIncrease + 1);
 
         for (int i = 0; i < foodCount; ++i)
         {
@@ -169,7 +163,34 @@ public class BoardManager : MonoBehaviour
 
     void GenerateWall()
     {
-        int wallCount = Random.Range(6, 10);
+        // === CHANGED: Increase walls by 2 for every map size upgrade ===
+        int sizeIncrease = m_CurrentDayCycle / 3;
+        int extraWalls = sizeIncrease * 2;
+        int wallCount = Random.Range(6 + extraWalls, 10 + extraWalls);
+
+        List<WallObject> allowedWalls = new List<WallObject>();
+
+        if (WallPrefabs.Length >= 3)
+        {
+            if (m_CurrentDayCycle >= 1 && m_CurrentDayCycle <= 3)
+            {
+                allowedWalls.Add(WallPrefabs[2]);
+            }
+            else if (m_CurrentDayCycle >= 4 && m_CurrentDayCycle <= 7)
+            {
+                allowedWalls.Add(WallPrefabs[0]);
+                allowedWalls.Add(WallPrefabs[2]);
+            }
+            else
+            {
+                allowedWalls.AddRange(WallPrefabs);
+            }
+        }
+        else
+        {
+            allowedWalls.AddRange(WallPrefabs);
+        }
+
         for (int i = 0; i < wallCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0) break;
@@ -178,7 +199,7 @@ public class BoardManager : MonoBehaviour
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
 
-            WallObject prefab = WallPrefabs[Random.Range(0, WallPrefabs.Length)];
+            WallObject prefab = allowedWalls[Random.Range(0, allowedWalls.Count)];
             WallObject newWall = Instantiate(prefab);
             AddObject(newWall, coord);
         }
@@ -186,7 +207,33 @@ public class BoardManager : MonoBehaviour
 
     void GenerateEnemy()
     {
-        int enemyCount = Random.Range(2, 5);
+        // === CHANGED: Dynamic Enemy count based on your specific rules ===
+        int minEnemies = 1;
+        int maxEnemies = 1;
+
+        if (m_CurrentDayCycle == 1)
+        {
+            minEnemies = 1;
+            maxEnemies = 1;
+        }
+        else if (m_CurrentDayCycle >= 2 && m_CurrentDayCycle <= 3)
+        {
+            minEnemies = 1;
+            maxEnemies = 2;
+        }
+        else if (m_CurrentDayCycle >= 4 && m_CurrentDayCycle <= 6)
+        {
+            minEnemies = 1;
+            maxEnemies = 3;
+        }
+        else // Days 7 through 10
+        {
+            minEnemies = 2;
+            maxEnemies = 4;
+        }
+
+        int enemyCount = Random.Range(minEnemies, maxEnemies + 1);
+
         for (int i = 0; i < enemyCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0) break;

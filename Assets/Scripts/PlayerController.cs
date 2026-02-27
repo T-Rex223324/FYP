@@ -105,6 +105,15 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        // === NEW: Wait for a turn ===
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            // Trigger the turn manager without changing position
+            GameManager.Instance.TurnManager.Tick();
+            return;
+        }
+        // ============================
+
         Vector2Int newCellTarget = m_CellPosition;
         bool hasMoved = false;
 
