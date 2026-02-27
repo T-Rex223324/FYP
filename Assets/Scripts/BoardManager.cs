@@ -17,7 +17,13 @@ public class BoardManager : MonoBehaviour
 
     public WallObject[] WallPrefabs;
     public ExitCellObject ExitCellPrefab;
+
     public GameObject EnemyPrefab;
+
+    // === NEW: Add a slot for the Elite Enemy ===
+    public GameObject EliteEnemyPrefab;
+    // ===========================================
+
     public PlayerController Player;
 
     private CellData[,] m_BoardData;
@@ -233,6 +239,23 @@ public class BoardManager : MonoBehaviour
         }
 
         int enemyCount = Random.Range(minEnemies, maxEnemies + 1);
+
+        // === NEW: Spawn exactly 1 Elite Enemy on Day 10 ===
+        if (m_CurrentDayCycle == 10 && EliteEnemyPrefab != null)
+        {
+            if (m_EmptyCellsList.Count > 0)
+            {
+                int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
+                Vector2Int coord = m_EmptyCellsList[randomIndex];
+                m_EmptyCellsList.RemoveAt(randomIndex);
+
+                GameObject newEliteObj = Instantiate(EliteEnemyPrefab);
+                Enemy eliteEnemy = newEliteObj.GetComponent<Enemy>();
+
+                if (eliteEnemy != null) AddObject(eliteEnemy, coord);
+            }
+        }
+        // ==================================================
 
         for (int i = 0; i < enemyCount; ++i)
         {

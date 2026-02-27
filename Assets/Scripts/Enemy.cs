@@ -3,6 +3,11 @@ using UnityEngine;
 public class Enemy : CellObject
 {
     public int Health = 3;
+
+    // === NEW: Configurable Damage! ===
+    public int Damage = 3;
+    // =================================
+
     private int m_CurrentHealth;
 
     // === NEW VARIABLES FOR ANIMATION & MOVEMENT ===
@@ -37,8 +42,12 @@ public class Enemy : CellObject
             // Slide smoothly towards the target
             transform.position = Vector3.MoveTowards(transform.position, m_MoveTarget, MoveSpeed * Time.deltaTime);
 
-            if (transform.position == m_MoveTarget)
+            // CHANGED: Use Distance to check if we arrived instead of "=="
+            if (Vector3.Distance(transform.position, m_MoveTarget) < 0.01f)
             {
+                // Snap exactly to the target to fix any micro-decimals
+                transform.position = m_MoveTarget;
+
                 m_IsMoving = false;
                 if (m_Animator != null) m_Animator.SetBool("Moving", false);
             }
@@ -98,8 +107,10 @@ public class Enemy : CellObject
         {
             // === CHANGED: Attack the Player ===
             if (m_Animator != null) m_Animator.SetTrigger("Attack"); // Play Zombie Attack Animation
-            GameManager.Instance.PlayerController.TakeDamage(3); // Tell Player to take damage
-            // ==================================
+
+            // === UPDATED: Uses the Damage variable instead of hardcoded 3 ===
+            GameManager.Instance.PlayerController.TakeDamage(Damage);
+            // ================================================================
         }
         else
         {

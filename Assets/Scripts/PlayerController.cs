@@ -12,12 +12,11 @@ public class PlayerController : MonoBehaviour
     private Vector3 m_MoveTarget;
     public float MoveSpeed = 5.0f;
 
-    // === NEW: Allow enemies to read the player's position ===
+    // Allow enemies to read the player's position
     public Vector2Int Cell
     {
         get { return m_CellPosition; }
     }
-    // ========================================================
 
     private void Awake()
     {
@@ -65,7 +64,7 @@ public class PlayerController : MonoBehaviour
         m_IsGameOver = true;
     }
 
-    // === NEW FUNCTION: Called by the Enemy when they attack ===
+    // Called by the Enemy when they attack
     public void TakeDamage(int damageAmount)
     {
         // Play the "Hit" or "Damage" animation
@@ -74,7 +73,6 @@ public class PlayerController : MonoBehaviour
         // Reduce food
         GameManager.Instance.ChangeFood(-damageAmount);
     }
-    // ==========================================================
 
     private void Update()
     {
@@ -105,38 +103,39 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // === NEW: Wait for a turn ===
+        // Wait for a turn
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             // Trigger the turn manager without changing position
             GameManager.Instance.TurnManager.Tick();
             return;
         }
-        // ============================
 
         Vector2Int newCellTarget = m_CellPosition;
         bool hasMoved = false;
 
-        if (Keyboard.current.upArrowKey.wasPressedThisFrame)
+        // === UPDATED: Now checks for Arrow Keys OR WASD Keys ===
+        if (Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame)
         {
             newCellTarget.y += 1;
             hasMoved = true;
         }
-        else if (Keyboard.current.downArrowKey.wasPressedThisFrame)
+        else if (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame)
         {
             newCellTarget.y -= 1;
             hasMoved = true;
         }
-        else if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+        else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
         {
             newCellTarget.x += 1;
             hasMoved = true;
         }
-        else if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+        else if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
         {
             newCellTarget.x -= 1;
             hasMoved = true;
         }
+        // ========================================================
 
         if (hasMoved)
         {
