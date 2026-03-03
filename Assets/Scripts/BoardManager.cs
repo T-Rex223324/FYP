@@ -10,41 +10,92 @@ public class BoardManager : MonoBehaviour
         public CellObject ContainedObject;
     }
 
+    [Header("--- URBAN THEME (Days 1 - 10) ---")]
     public GameObject[] FoodPrefabs;
+    public WallObject[] WallPrefabs;
+    public GameObject EnemyPrefab;
+    public GameObject EliteEnemyPrefab;
+    public Tile[] GroundTiles;
+    public Tile[] WallTiles;
+    public ExitCellObject ExitCellPrefab; // <-- HERE IS THE URBAN EXIT
 
+    [Header("--- SAND THEME (Days 11 - 20) ---")]
+    public GameObject[] SandFoodPrefabs;
+    public WallObject[] SandWallPrefabs;
+    public GameObject SandEnemyPrefab;
+    public GameObject SandEliteEnemyPrefab;
+    public Tile[] SandGroundTiles;
+    public Tile[] SandWallTiles;
+    public ExitCellObject SandExitCellPrefab; // <-- HERE IS THE NEW SAND EXIT
+
+    [Header("--- SNOW THEME (Days 21 - 30+) ---")]
+    public GameObject[] SnowFoodPrefabs;
+    public WallObject[] SnowWallPrefabs;
+    public GameObject SnowEnemyPrefab;
+    public GameObject SnowEliteEnemyPrefab;
+    public Tile[] SnowGroundTiles;
+    public Tile[] SnowWallTiles;
+    public ExitCellObject SnowExitCellPrefab; // <-- HERE IS THE NEW SNOW EXIT
+
+    [Header("--- GENERAL SETTINGS ---")]
     public int MinFoodCount = 5;
     public int MaxFoodCount = 10;
-
-    public WallObject[] WallPrefabs;
-    public ExitCellObject ExitCellPrefab;
-
-    public GameObject EnemyPrefab;
-
-    // === NEW: Add a slot for the Elite Enemy ===
-    public GameObject EliteEnemyPrefab;
-    // ===========================================
-
     public PlayerController Player;
+    public int Width;
+    public int Height;
 
     private CellData[,] m_BoardData;
     private Tilemap m_Tilemap;
     private Grid m_Grid;
     private List<Vector2Int> m_EmptyCellsList;
-
-    // Keep track of where we are in the 1-10 loop
     private int m_CurrentDayCycle;
 
-    public int Width;
-    public int Height;
-    public Tile[] GroundTiles;
-    public Tile[] WallTiles;
+    // These variables will temporarily hold whichever theme is currently active!
+    private Tile[] m_ActiveGroundTiles;
+    private Tile[] m_ActiveWallTiles;
+    private WallObject[] m_ActiveWallPrefabs;
+    private GameObject[] m_ActiveFoodPrefabs;
+    private GameObject m_ActiveEnemyPrefab;
+    private GameObject m_ActiveEliteEnemyPrefab;
+    private ExitCellObject m_ActiveExitCellPrefab; // <-- THIS HOLDS THE CORRECT EXIT GATE!
 
     public void Init(int currentLevel)
     {
-        // Calculate our current day in the 1 to 10 loop
+        // === THE MAGIC SWITCH: ASSIGN THEME BASED ON LEVEL ===
+        if (currentLevel <= 10)
+        {
+            m_ActiveGroundTiles = GroundTiles;
+            m_ActiveWallTiles = WallTiles;
+            m_ActiveWallPrefabs = WallPrefabs;
+            m_ActiveFoodPrefabs = FoodPrefabs;
+            m_ActiveEnemyPrefab = EnemyPrefab;
+            m_ActiveEliteEnemyPrefab = EliteEnemyPrefab;
+            m_ActiveExitCellPrefab = ExitCellPrefab; // Sets Urban Exit
+        }
+        else if (currentLevel <= 20)
+        {
+            m_ActiveGroundTiles = SandGroundTiles;
+            m_ActiveWallTiles = SandWallTiles;
+            m_ActiveWallPrefabs = SandWallPrefabs;
+            m_ActiveFoodPrefabs = SandFoodPrefabs;
+            m_ActiveEnemyPrefab = SandEnemyPrefab;
+            m_ActiveEliteEnemyPrefab = SandEliteEnemyPrefab;
+            m_ActiveExitCellPrefab = SandExitCellPrefab; // Sets Sand Exit
+        }
+        else
+        {
+            m_ActiveGroundTiles = SnowGroundTiles;
+            m_ActiveWallTiles = SnowWallTiles;
+            m_ActiveWallPrefabs = SnowWallPrefabs;
+            m_ActiveFoodPrefabs = SnowFoodPrefabs;
+            m_ActiveEnemyPrefab = SnowEnemyPrefab;
+            m_ActiveEliteEnemyPrefab = SnowEliteEnemyPrefab;
+            m_ActiveExitCellPrefab = SnowExitCellPrefab; // Sets Snow Exit
+        }
+        // =====================================================
+
         m_CurrentDayCycle = ((currentLevel - 1) % 10) + 1;
 
-        // Increase size on Day 3, Day 6, and Day 9. Day 10 stays the same as 9.
         int sizeIncrease = m_CurrentDayCycle / 3;
         int dynamicSize = 8 + sizeIncrease;
 
@@ -65,12 +116,12 @@ public class BoardManager : MonoBehaviour
 
                 if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
                 {
-                    tile = WallTiles[Random.Range(0, WallTiles.Length)];
+                    tile = m_ActiveWallTiles[Random.Range(0, m_ActiveWallTiles.Length)];
                     m_BoardData[x, y].Passable = false;
                 }
                 else
                 {
-                    tile = GroundTiles[Random.Range(0, GroundTiles.Length)];
+                    tile = m_ActiveGroundTiles[Random.Range(0, m_ActiveGroundTiles.Length)];
                     m_BoardData[x, y].Passable = true;
                     m_EmptyCellsList.Add(new Vector2Int(x, y));
                 }
@@ -82,14 +133,17 @@ public class BoardManager : MonoBehaviour
         m_EmptyCellsList.Remove(new Vector2Int(1, 1));
 
         Vector2Int endCoord = new Vector2Int(Width - 2, Height - 2);
-        AddObject(Instantiate(ExitCellPrefab), endCoord);
+
+        // === HERE IS WHERE IT SPAWNS THE ACTIVE EXIT GATE ===
+        AddObject(Instantiate(m_ActiveExitCellPrefab), endCoord);
+        // ====================================================
+
         m_EmptyCellsList.Remove(endCoord);
 
         GenerateWall();
         GenerateFood();
         GenerateEnemy();
 
-        // Auto-Center Camera
         float centerX = (Width - 1) / 2.0f;
         float centerY = (Height - 1) / 2.0f;
         Camera.main.transform.position = new Vector3(centerX, centerY, -10f);
@@ -98,20 +152,16 @@ public class BoardManager : MonoBehaviour
 
     public void Clean()
     {
-        if (m_BoardData == null) return;
+        if (m_Tilemap == null) m_Tilemap = GetComponentInChildren<Tilemap>();
+        if (m_Tilemap != null) m_Tilemap.ClearAllTiles();
 
-        for (int y = 0; y < Height; ++y)
+        CellObject[] allObjects = FindObjectsByType<CellObject>(FindObjectsSortMode.None);
+        foreach (CellObject obj in allObjects)
         {
-            for (int x = 0; x < Width; ++x)
-            {
-                var cellData = m_BoardData[x, y];
-                if (cellData.ContainedObject != null)
-                {
-                    Destroy(cellData.ContainedObject.gameObject);
-                }
-                SetCellTile(new Vector2Int(x, y), null);
-            }
+            Destroy(obj.gameObject);
         }
+
+        m_BoardData = null;
     }
 
     public Vector3 CellToWorld(Vector2Int cellIndex)
@@ -148,7 +198,6 @@ public class BoardManager : MonoBehaviour
 
     void GenerateFood()
     {
-        // === CHANGED: Add a little extra food based on map size so it doesn't look empty ===
         int sizeIncrease = m_CurrentDayCycle / 3;
         int foodCount = Random.Range(MinFoodCount + sizeIncrease, MaxFoodCount + sizeIncrease + 1);
 
@@ -160,7 +209,7 @@ public class BoardManager : MonoBehaviour
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
 
-            GameObject prefabToSpawn = FoodPrefabs[Random.Range(0, FoodPrefabs.Length)];
+            GameObject prefabToSpawn = m_ActiveFoodPrefabs[Random.Range(0, m_ActiveFoodPrefabs.Length)];
 
             GameObject newFood = Instantiate(prefabToSpawn);
             AddObject(newFood.GetComponent<FoodObject>(), coord);
@@ -169,32 +218,31 @@ public class BoardManager : MonoBehaviour
 
     void GenerateWall()
     {
-        // === CHANGED: Increase walls by 2 for every map size upgrade ===
         int sizeIncrease = m_CurrentDayCycle / 3;
         int extraWalls = sizeIncrease * 2;
         int wallCount = Random.Range(6 + extraWalls, 10 + extraWalls);
 
         List<WallObject> allowedWalls = new List<WallObject>();
 
-        if (WallPrefabs.Length >= 3)
+        if (m_ActiveWallPrefabs.Length >= 3)
         {
             if (m_CurrentDayCycle >= 1 && m_CurrentDayCycle <= 3)
             {
-                allowedWalls.Add(WallPrefabs[2]);
+                allowedWalls.Add(m_ActiveWallPrefabs[0]);
             }
             else if (m_CurrentDayCycle >= 4 && m_CurrentDayCycle <= 7)
             {
-                allowedWalls.Add(WallPrefabs[0]);
-                allowedWalls.Add(WallPrefabs[2]);
+                allowedWalls.Add(m_ActiveWallPrefabs[0]);
+                allowedWalls.Add(m_ActiveWallPrefabs[1]);
             }
             else
             {
-                allowedWalls.AddRange(WallPrefabs);
+                allowedWalls.AddRange(m_ActiveWallPrefabs);
             }
         }
         else
         {
-            allowedWalls.AddRange(WallPrefabs);
+            allowedWalls.AddRange(m_ActiveWallPrefabs);
         }
 
         for (int i = 0; i < wallCount; ++i)
@@ -213,7 +261,6 @@ public class BoardManager : MonoBehaviour
 
     void GenerateEnemy()
     {
-        // === CHANGED: Dynamic Enemy count based on your specific rules ===
         int minEnemies = 1;
         int maxEnemies = 1;
 
@@ -232,7 +279,7 @@ public class BoardManager : MonoBehaviour
             minEnemies = 1;
             maxEnemies = 3;
         }
-        else // Days 7 through 10
+        else
         {
             minEnemies = 2;
             maxEnemies = 4;
@@ -240,8 +287,7 @@ public class BoardManager : MonoBehaviour
 
         int enemyCount = Random.Range(minEnemies, maxEnemies + 1);
 
-        // === NEW: Spawn exactly 1 Elite Enemy on Day 10 ===
-        if (m_CurrentDayCycle == 10 && EliteEnemyPrefab != null)
+        if (m_CurrentDayCycle == 10 && m_ActiveEliteEnemyPrefab != null)
         {
             if (m_EmptyCellsList.Count > 0)
             {
@@ -249,13 +295,12 @@ public class BoardManager : MonoBehaviour
                 Vector2Int coord = m_EmptyCellsList[randomIndex];
                 m_EmptyCellsList.RemoveAt(randomIndex);
 
-                GameObject newEliteObj = Instantiate(EliteEnemyPrefab);
+                GameObject newEliteObj = Instantiate(m_ActiveEliteEnemyPrefab);
                 Enemy eliteEnemy = newEliteObj.GetComponent<Enemy>();
 
                 if (eliteEnemy != null) AddObject(eliteEnemy, coord);
             }
         }
-        // ==================================================
 
         for (int i = 0; i < enemyCount; ++i)
         {
@@ -265,7 +310,7 @@ public class BoardManager : MonoBehaviour
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
 
-            GameObject newEnemyObj = Instantiate(EnemyPrefab);
+            GameObject newEnemyObj = Instantiate(m_ActiveEnemyPrefab);
             Enemy newEnemy = newEnemyObj.GetComponent<Enemy>();
 
             if (newEnemy != null) AddObject(newEnemy, coord);

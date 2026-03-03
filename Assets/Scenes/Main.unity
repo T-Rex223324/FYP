@@ -276,7 +276,6 @@ GameObject:
   - component: {fileID: 607935306}
   - component: {fileID: 607935308}
   - component: {fileID: 607935313}
-  - component: {fileID: 607935309}
   m_Layer: 0
   m_Name: BoardManager
   m_TagString: Untagged
@@ -328,11 +327,11 @@ MonoBehaviour:
   - {fileID: 8072300250908481549, guid: 7c4bec17960bf8f4996b46c2ac689ff6, type: 3}
   - {fileID: 527293730242160464, guid: 06557d75cd622b44ba7e6f284d4a3f7e, type: 3}
   MinFoodCount: 2
-  MaxFoodCount: 4
+  MaxFoodCount: 6
   WallPrefabs:
-  - {fileID: 2042946378}
-  - {fileID: 550616899670956447, guid: 801ab2a333fddad43ab11ab93d617fe5, type: 3}
   - {fileID: -6634869765907870135, guid: 9977963ccee2329469bb0aba1c4f6eb2, type: 3}
+  - {fileID: 2536240077744990407, guid: c65697240f31b544fb7a353a4cae98b9, type: 3}
+  - {fileID: 550616899670956447, guid: 801ab2a333fddad43ab11ab93d617fe5, type: 3}
   ExitCellPrefab: {fileID: 6680761949727546545, guid: 627f3f0e763014f4685bb87d67484c27, type: 3}
   EnemyPrefab: {fileID: 8267937722801308254, guid: e6923bdcb466a5447bd8ba9e70de8ad5, type: 3}
   EliteEnemyPrefab: {fileID: 8267937722801308254, guid: eb824123671f93a4eb36feddbdb671b7, type: 3}
@@ -351,22 +350,6 @@ MonoBehaviour:
   WallTiles:
   - {fileID: 11400000, guid: a7b2d9a664ce1c24ea23a9e54c28706d, type: 2}
   - {fileID: 11400000, guid: d56f6f469617748498f06a363a36e8dc, type: 2}
---- !u!114 &607935309
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 607935305}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d38220431955674ea65e9c23859d3ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MoveSpeed: 5
-  MoveSounds: []
-  AttackSounds: []
-  HitSounds: []
 --- !u!114 &607935313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -916,53 +899,6 @@ MonoBehaviour:
   - {fileID: 8300000, guid: f846fa6716df0aa4d974398651d2873c, type: 3}
   - {fileID: 8300000, guid: 3e71015faaec5844787e2f9150c999a8, type: 3}
   - {fileID: 8300000, guid: c466c898ba0f60b4cb444af1ef8672e8, type: 3}
---- !u!1 &2042946377
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2042946379}
-  - component: {fileID: 2042946378}
-  m_Layer: 0
-  m_Name: Wall
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2042946378
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2042946377}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b7e9404e078d49b4e843f2cab76ee8b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObstacleTile: {fileID: 11400000, guid: f225df189ac16ad4cb6058dad6ee1925, type: 2}
-  DamagedTile: {fileID: 11400000, guid: 0781d2390842c9d4cb9ad7f464abb606, type: 2}
-  MaxHealth: 3
---- !u!4 &2042946379
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2042946377}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.83285, y: 1.76936, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2073671459
 GameObject:
   m_ObjectHideFlags: 0
@@ -1142,5 +1078,4 @@ SceneRoots:
   - {fileID: 957377224}
   - {fileID: 2073671461}
   - {fileID: 768006881}
-  - {fileID: 2042946379}
   - {fileID: 164975355}
