@@ -102,6 +102,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AmountGranted: 1000
+  EatSounds:
+  - {fileID: 8300000, guid: 1cb61f83d60374c7389bb547431919e3, type: 3}
 --- !u!114 &-6355693680864164031
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,6 +12,12 @@ public class PlayerController : MonoBehaviour
     private Vector3 m_MoveTarget;
     public float MoveSpeed = 5.0f;
 
+    // === CHANGED: AUDIO ARRAYS INSTEAD OF SINGLE CLIPS ===
+    public AudioClip[] MoveSounds;
+    public AudioClip[] AttackSounds;
+    public AudioClip[] HitSounds;
+    // =====================================================
+
     // Allow enemies to read the player's position
     public Vector2Int Cell
     {
@@ -21,6 +27,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         m_Animator = GetComponent<Animator>();
+        // Note: We removed the local AudioSource here because the SoundManager handles it now!
     }
 
     public void Init()
@@ -54,6 +61,13 @@ public class PlayerController : MonoBehaviour
         {
             m_IsMoving = true;
             m_MoveTarget = m_Board.CellToWorld(m_CellPosition);
+
+            // === CHANGED: CALL SOUND MANAGER FOR FOOTSTEPS ===
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.RandomizeSfx(MoveSounds);
+            }
+            // =================================================
         }
 
         m_Animator.SetBool("Moving", m_IsMoving);
@@ -72,6 +86,13 @@ public class PlayerController : MonoBehaviour
 
         // Reduce food
         GameManager.Instance.ChangeFood(-damageAmount);
+
+        // === CHANGED: CALL SOUND MANAGER FOR TAKING DAMAGE ===
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.RandomizeSfx(HitSounds);
+        }
+        // =====================================================
     }
 
     private void Update()
@@ -114,7 +135,7 @@ public class PlayerController : MonoBehaviour
         Vector2Int newCellTarget = m_CellPosition;
         bool hasMoved = false;
 
-        // === UPDATED: Now checks for Arrow Keys OR WASD Keys ===
+        // Checks for Arrow Keys OR WASD Keys
         if (Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame)
         {
             newCellTarget.y += 1;
@@ -135,7 +156,6 @@ public class PlayerController : MonoBehaviour
             newCellTarget.x -= 1;
             hasMoved = true;
         }
-        // ========================================================
 
         if (hasMoved)
         {
@@ -160,6 +180,13 @@ public class PlayerController : MonoBehaviour
                     else
                     {
                         m_Animator.SetTrigger("Attack");
+
+                        // === CHANGED: CALL SOUND MANAGER FOR CHOPPING/ATTACKING ===
+                        if (SoundManager.Instance != null)
+                        {
+                            SoundManager.Instance.RandomizeSfx(AttackSounds);
+                        }
+                        // ==========================================================
                     }
                 }
             }
