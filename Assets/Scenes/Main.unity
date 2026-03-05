@@ -326,18 +326,12 @@ MonoBehaviour:
   FoodPrefabs:
   - {fileID: 8072300250908481549, guid: 7c4bec17960bf8f4996b46c2ac689ff6, type: 3}
   - {fileID: 527293730242160464, guid: 06557d75cd622b44ba7e6f284d4a3f7e, type: 3}
-  MinFoodCount: 2
-  MaxFoodCount: 6
   WallPrefabs:
   - {fileID: -6634869765907870135, guid: 9977963ccee2329469bb0aba1c4f6eb2, type: 3}
   - {fileID: 2536240077744990407, guid: c65697240f31b544fb7a353a4cae98b9, type: 3}
   - {fileID: 550616899670956447, guid: 801ab2a333fddad43ab11ab93d617fe5, type: 3}
-  ExitCellPrefab: {fileID: 6680761949727546545, guid: 627f3f0e763014f4685bb87d67484c27, type: 3}
   EnemyPrefab: {fileID: 8267937722801308254, guid: e6923bdcb466a5447bd8ba9e70de8ad5, type: 3}
   EliteEnemyPrefab: {fileID: 8267937722801308254, guid: eb824123671f93a4eb36feddbdb671b7, type: 3}
-  Player: {fileID: 957377225}
-  Width: 10
-  Height: 10
   GroundTiles:
   - {fileID: 11400000, guid: 10232e28e9a631e46a700fd4f517b810, type: 2}
   - {fileID: 11400000, guid: 230eccaae61073c41a7ae0592cb0fd3f, type: 2}
@@ -350,6 +344,54 @@ MonoBehaviour:
   WallTiles:
   - {fileID: 11400000, guid: a7b2d9a664ce1c24ea23a9e54c28706d, type: 2}
   - {fileID: 11400000, guid: d56f6f469617748498f06a363a36e8dc, type: 2}
+  ExitCellPrefab: {fileID: 6680761949727546545, guid: 627f3f0e763014f4685bb87d67484c27, type: 3}
+  SandFoodPrefabs:
+  - {fileID: 3956412207362117015, guid: b1bbe919d00cdf145b9c6aa74d6dafc6, type: 3}
+  - {fileID: 3409040990151288686, guid: ca951506acb404040b2e7306b4772e77, type: 3}
+  SandWallPrefabs:
+  - {fileID: 3439549210480780545, guid: a853f5efa4e154d4498c9593e6a32b2a, type: 3}
+  - {fileID: 8684363790081056727, guid: c9f66cc098612ae47bfaca6ad6bbc44f, type: 3}
+  - {fileID: -5187022312582480402, guid: 36c861873f2088c4dba35babaac3997a, type: 3}
+  SandEnemyPrefab: {fileID: 494316956775255757, guid: b6802b6f7fc8ac9479145524f05de0aa, type: 3}
+  SandEliteEnemyPrefab: {fileID: 830596133146059099, guid: ef4c8b48fc78a784e991cc0f17d67964, type: 3}
+  SandGroundTiles:
+  - {fileID: 11400000, guid: 42e851dbd4a0ebc40bd298ce9fce9711, type: 2}
+  - {fileID: 11400000, guid: ab2e0874e0e4cc749a4df9ed9bd7a47b, type: 2}
+  - {fileID: 11400000, guid: 4edae85ffd4a78941bafbbe2527ad5fc, type: 2}
+  - {fileID: 11400000, guid: 3965727aae5a6d94792ffe1fe4ea5d67, type: 2}
+  - {fileID: 11400000, guid: b59a341d9a4e6d9419f59712ba546304, type: 2}
+  - {fileID: 11400000, guid: a0b5775d886da7140be2f903246ff9b8, type: 2}
+  - {fileID: 11400000, guid: c047992ab1cf247458edf80eef67df59, type: 2}
+  - {fileID: 11400000, guid: fd7ebe7f82100b34687c89c0ec53d6b0, type: 2}
+  - {fileID: 11400000, guid: 543260a4e38b1a34abbd7679022c6ddc, type: 2}
+  SandWallTiles:
+  - {fileID: 11400000, guid: c7c464777cc12d84a89e8f84d71dd7e0, type: 2}
+  - {fileID: 11400000, guid: 6cde2f9a02aeb6849bdb44988ea4c761, type: 2}
+  SandExitCellPrefab: {fileID: 2552730009011964230, guid: 787b2286dcd357443a771b43dfb35c02, type: 3}
+  SnowFoodPrefabs:
+  - {fileID: 8096763889688325244, guid: be6b5e2e9e79ea2488af43319340588d, type: 3}
+  - {fileID: 8687590194758283406, guid: 980a777acce179b47b13ae5d00e9b6a8, type: 3}
+  SnowWallPrefabs:
+  - {fileID: 3662724927850765266, guid: 551e9a195bf040749b12c9655541b219, type: 3}
+  SnowEnemyPrefab: {fileID: 6253658332739261858, guid: 2a2303bb576caae48a055ab95e6fda85, type: 3}
+  SnowEliteEnemyPrefab: {fileID: 7528260785870264120, guid: 663e83b1affe6e940be84e71571a62fe, type: 3}
+  SnowGroundTiles:
+  - {fileID: 11400000, guid: 5165cbe62d046eb4ab2492d4507dfae4, type: 2}
+  - {fileID: 11400000, guid: bfb79511fb8453e47ac1bdd3349a481f, type: 2}
+  - {fileID: 11400000, guid: 431716d8cc8e28246a83f8b0201c17ae, type: 2}
+  - {fileID: 11400000, guid: 50a4462a9636cbc498b34b29b1f3cd00, type: 2}
+  - {fileID: 11400000, guid: d09ba1c80f8909248880608022df8bd8, type: 2}
+  - {fileID: 11400000, guid: 87481fde026e48e418f46363e219e746, type: 2}
+  - {fileID: 11400000, guid: 49ddb7d92d5831840ad0e4f0b6abcc78, type: 2}
+  - {fileID: 11400000, guid: 2ffcde57d40f04e4396f15d0a6261323, type: 2}
+  SnowWallTiles:
+  - {fileID: 11400000, guid: deb0090f1ae4f174492493c4efaa306c, type: 2}
+  SnowExitCellPrefab: {fileID: -219724357623271700, guid: f672474485ac2494dbf078b10ab51bb8, type: 3}
+  MinFoodCount: 2
+  MaxFoodCount: 6
+  Player: {fileID: 957377225}
+  Width: 10
+  Height: 10
 --- !u!114 &607935313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -479,7 +521,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 100
+  m_SortingOrder: 10
   m_Sprite: {fileID: 21300000, guid: fbe1e7b94bb1a4a099d5bcb15a00141c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -518,7 +560,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d38220431955674ea65e9c23859d3ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoveSpeed: 5
+  MoveSpeed: 3.5
   MoveSounds:
   - {fileID: 8300000, guid: 892962212a4b74d1c9f578a3b6ea6439, type: 3}
   AttackSounds:
