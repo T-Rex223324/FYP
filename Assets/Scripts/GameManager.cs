@@ -81,6 +81,23 @@ public class GameManager : MonoBehaviour
             m_DayLabel.text = "Day : " + m_CurrentLevel;
         }
 
+        // === NEW: WIN CONDITION ===
+        if (m_CurrentLevel == 30)
+        {
+            // 1. Tell player to stop moving (Reusing the Game Over freeze)
+            PlayerController.GameOver();
+
+            // 2. Show the black panel screen
+            m_GameOverPanel.style.visibility = Visibility.Visible;
+
+            // 3. Change the text to your Win Message!
+            m_GameOverMessage.text = "You is the winner. Thank you for play my video game";
+
+            // 4. Return early so the game stops generating new levels behind the screen
+            return;
+        }
+        // ==========================
+
         BoardManager.Clean();
         // Pass the level into the Init function
         BoardManager.Init(m_CurrentLevel);

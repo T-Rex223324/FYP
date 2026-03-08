@@ -373,7 +373,7 @@ MonoBehaviour:
   - {fileID: 8687590194758283406, guid: 980a777acce179b47b13ae5d00e9b6a8, type: 3}
   SnowWallPrefabs:
   - {fileID: 3662724927850765266, guid: 551e9a195bf040749b12c9655541b219, type: 3}
-  SnowEnemyPrefab: {fileID: 6253658332739261858, guid: 2a2303bb576caae48a055ab95e6fda85, type: 3}
+  SnowEnemyPrefab: {fileID: 8733730804727043308, guid: 3f232bf570415a9428bc32c99cad7180, type: 3}
   SnowEliteEnemyPrefab: {fileID: 7528260785870264120, guid: 663e83b1affe6e940be84e71571a62fe, type: 3}
   SnowGroundTiles:
   - {fileID: 11400000, guid: 5165cbe62d046eb4ab2492d4507dfae4, type: 2}
