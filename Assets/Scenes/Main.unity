@@ -965,7 +965,7 @@ MonoBehaviour:
   BoardManager: {fileID: 607935308}
   PlayerController: {fileID: 957377225}
   UIDoc: {fileID: 768006880}
-  DevStartDay: 29
+  DevStartDay: 1
 --- !u!4 &2073671461
 Transform:
   m_ObjectHideFlags: 0

@@ -97,6 +97,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // === NEW: Stop moving if the game is paused! ===
+        if (GameManager.Instance.IsPaused) return;
+
         if (m_Board == null) return;
 
         if (m_IsGameOver)
