@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public UIDocument UIDoc;
     public TurnManager TurnManager { get; private set; }
 
+    public int DevStartDay = 29;
     private int m_FoodAmount = 100;
     private Label m_FoodLabel;
 
@@ -51,7 +52,8 @@ public class GameManager : MonoBehaviour
     {
         m_GameOverPanel.style.visibility = Visibility.Hidden;
 
-        m_CurrentLevel = 1;
+        m_CurrentLevel = DevStartDay;
+        //m_CurrentLevel = 1;
 
         // Starts the game with 100 food as requested!
         m_FoodAmount = 100;
@@ -82,7 +84,7 @@ public class GameManager : MonoBehaviour
         }
 
         // === NEW: WIN CONDITION ===
-        if (m_CurrentLevel == 30)
+        if (m_CurrentLevel == 31)
         {
             // 1. Tell player to stop moving (Reusing the Game Over freeze)
             PlayerController.GameOver();

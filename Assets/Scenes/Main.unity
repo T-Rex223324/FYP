@@ -275,7 +275,6 @@ GameObject:
   - component: {fileID: 607935307}
   - component: {fileID: 607935306}
   - component: {fileID: 607935308}
-  - component: {fileID: 607935313}
   m_Layer: 0
   m_Name: BoardManager
   m_TagString: Untagged
@@ -373,7 +372,7 @@ MonoBehaviour:
   - {fileID: 8687590194758283406, guid: 980a777acce179b47b13ae5d00e9b6a8, type: 3}
   SnowWallPrefabs:
   - {fileID: 3662724927850765266, guid: 551e9a195bf040749b12c9655541b219, type: 3}
-  SnowEnemyPrefab: {fileID: 8733730804727043308, guid: 3f232bf570415a9428bc32c99cad7180, type: 3}
+  SnowEnemyPrefab: {fileID: 4054759136145494434, guid: 0409ba71036be0541ac72200e3110c63, type: 3}
   SnowEliteEnemyPrefab: {fileID: 7528260785870264120, guid: 663e83b1affe6e940be84e71571a62fe, type: 3}
   SnowGroundTiles:
   - {fileID: 11400000, guid: 5165cbe62d046eb4ab2492d4507dfae4, type: 2}
@@ -392,21 +391,6 @@ MonoBehaviour:
   Player: {fileID: 957377225}
   Width: 10
   Height: 10
---- !u!114 &607935313
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 607935305}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91b7f0e0e66f6994fa5230c299d037ab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BoardManager: {fileID: 607935308}
-  PlayerController: {fileID: 957377225}
-  UIDoc: {fileID: 768006880}
 --- !u!1 &768006879
 GameObject:
   m_ObjectHideFlags: 0
@@ -981,6 +965,7 @@ MonoBehaviour:
   BoardManager: {fileID: 607935308}
   PlayerController: {fileID: 957377225}
   UIDoc: {fileID: 768006880}
+  DevStartDay: 29
 --- !u!4 &2073671461
 Transform:
   m_ObjectHideFlags: 0
