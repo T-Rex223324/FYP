@@ -14,10 +14,7 @@ public class GameManager : MonoBehaviour
     public TurnManager TurnManager { get; private set; }
 
     public int DevStartDay = 1;
-
-    // === NEW: Pause State ===
     public bool IsPaused { get; private set; }
-    // ========================
 
     private int m_FoodAmount = 100;
     private Label m_FoodLabel;
@@ -28,21 +25,18 @@ public class GameManager : MonoBehaviour
     private VisualElement m_MainMenuPanel;
     private Button m_PlayButton;
 
-    // === NEW: Pause Menu Variables ===
     private VisualElement m_PauseMenuPanel;
     private Button m_ResumeButton;
     private Button m_ExitMenuButton;
-    // =================================
+
+    private Slider m_MusicSlider;
+    private Slider m_SFXSlider;
 
     private int m_CurrentLevel = 1;
 
     private void Awake()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
     }
 
@@ -62,7 +56,6 @@ public class GameManager : MonoBehaviour
 
         if (m_PlayButton != null) m_PlayButton.clicked += StartGameFromMenu;
 
-        // === NEW: Pause Menu Setup ===
         m_PauseMenuPanel = UIDoc.rootVisualElement.Q<VisualElement>("PauseMenuPanel");
         m_ResumeButton = m_PauseMenuPanel.Q<Button>("ResumeButton");
         m_ExitMenuButton = m_PauseMenuPanel.Q<Button>("ExitMenuButton");
@@ -70,9 +63,28 @@ public class GameManager : MonoBehaviour
         if (m_ResumeButton != null) m_ResumeButton.clicked += ResumeGame;
         if (m_ExitMenuButton != null) m_ExitMenuButton.clicked += ReturnToMainMenu;
 
-        m_PauseMenuPanel.style.visibility = Visibility.Hidden;
-        // =============================
+        // === NEW: Hook up the Sliders! ===
+        m_MusicSlider = m_PauseMenuPanel.Q<Slider>("MusicSlider");
+        m_SFXSlider = m_PauseMenuPanel.Q<Slider>("SFXSlider");
 
+        if (m_MusicSlider != null)
+        {
+            m_MusicSlider.RegisterValueChangedCallback(evt =>
+            {
+                if (SoundManager.Instance != null) SoundManager.Instance.SetMusicVolume(evt.newValue);
+            });
+        }
+
+        if (m_SFXSlider != null)
+        {
+            m_SFXSlider.RegisterValueChangedCallback(evt =>
+            {
+                if (SoundManager.Instance != null) SoundManager.Instance.SetSFXVolume(evt.newValue);
+            });
+        }
+        // =================================
+
+        m_PauseMenuPanel.style.visibility = Visibility.Hidden;
         m_MainMenuPanel.style.visibility = Visibility.Visible;
         m_GameOverPanel.style.visibility = Visibility.Hidden;
         m_FoodLabel.style.visibility = Visibility.Hidden;
@@ -81,11 +93,8 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        // Safety check to ensure a keyboard is connected
         if (Keyboard.current == null) return;
 
-        // === CHANGED: Use the New Input System for the Escape Key ===
-        // (Only allow pausing if we are actually playing the game, not in a menu)
         if (Keyboard.current.escapeKey.wasPressedThisFrame &&
             m_MainMenuPanel.style.visibility == Visibility.Hidden &&
             m_GameOverPanel.style.visibility == Visibility.Hidden)
@@ -93,16 +102,10 @@ public class GameManager : MonoBehaviour
             if (IsPaused) ResumeGame();
             else PauseGame();
         }
-        // ======================================
 
-        // === CHANGED: Use the New Input System for the Tab Key ===
-        if (Keyboard.current.tabKey.wasPressedThisFrame)
-        {
-            NewLevel();
-        }
+        if (Keyboard.current.tabKey.wasPressedThisFrame) NewLevel();
     }
 
-    // === NEW: Pause Functions ===
     private void PauseGame()
     {
         IsPaused = true;
@@ -123,11 +126,8 @@ public class GameManager : MonoBehaviour
         m_DayLabel.style.visibility = Visibility.Hidden;
 
         m_MainMenuPanel.style.visibility = Visibility.Visible;
-
-        // Clean up the level behind the menu so it's empty
         BoardManager.Clean();
     }
-    // ============================
 
     private void StartGameFromMenu()
     {
@@ -141,7 +141,6 @@ public class GameManager : MonoBehaviour
     {
         m_GameOverPanel.style.visibility = Visibility.Hidden;
         m_CurrentLevel = DevStartDay;
-
         m_FoodAmount = 100;
         m_FoodLabel.text = "Food : " + m_FoodAmount;
 
@@ -172,10 +171,7 @@ public class GameManager : MonoBehaviour
         PlayerController.Spawn(BoardManager, new Vector2Int(1, 1));
     }
 
-    void OnTurnHappen()
-    {
-        ChangeFood(-1);
-    }
+    void OnTurnHappen() { ChangeFood(-1); }
 
     public void ChangeFood(int amount)
     {
