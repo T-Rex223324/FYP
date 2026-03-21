@@ -10,7 +10,6 @@ public class SoundManager : MonoBehaviour
     public float lowPitchRange = 0.95f;
     public float highPitchRange = 1.05f;
 
-    // === NEW: We brought your background music list over here! ===
     public AudioClip[] BackgroundTracks;
 
     void Awake()
@@ -22,8 +21,7 @@ public class SoundManager : MonoBehaviour
 
     void Start()
     {
-        // Start playing music right when the game boots up
-        PlayRandomTrack();
+        // === CHANGED: We leave this empty now so music doesn't play on the Main Menu! ===
     }
 
     void Update()
@@ -35,7 +33,8 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    void PlayRandomTrack()
+    // === CHANGED: Added 'public' so GameManager can trigger this ===
+    public void PlayRandomTrack()
     {
         if (BackgroundTracks.Length == 0 || musicSource == null) return;
 
@@ -43,6 +42,13 @@ public class SoundManager : MonoBehaviour
         musicSource.clip = BackgroundTracks[randomIndex];
         musicSource.Play();
     }
+
+    // === NEW: Added the missing StopMusic function! ===
+    public void StopMusic()
+    {
+        if (musicSource != null) musicSource.Stop();
+    }
+    // ==================================================
 
     public void RandomizeSfx(params AudioClip[] clips)
     {

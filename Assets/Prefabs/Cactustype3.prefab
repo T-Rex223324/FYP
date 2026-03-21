@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1207346707, guid: 2315cc0495cb2054ea5dd392c1cff51e, type: 3}
+  m_Sprite: {fileID: -1974419470, guid: d37699ad9648fcb468c0462b0b5a1810, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e9404e078d49b4e843f2cab76ee8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ObstacleTile: {fileID: 11400000, guid: bd76e2cdb027ed049adc6e32533843a5, type: 2}
+  ObstacleTile: {fileID: 11400000, guid: 6f28a046c33c2a74ab78e13da996c824, type: 2}
   DamagedTile: {fileID: 0}
   MaxHealth: 3
 --- !u!114 &2568646170849725101

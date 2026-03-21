@@ -438,17 +438,17 @@ MonoBehaviour:
   EnemyPrefab: {fileID: 8267937722801308254, guid: e6923bdcb466a5447bd8ba9e70de8ad5, type: 3}
   EliteEnemyPrefab: {fileID: 8267937722801308254, guid: eb824123671f93a4eb36feddbdb671b7, type: 3}
   GroundTiles:
-  - {fileID: 11400000, guid: 10232e28e9a631e46a700fd4f517b810, type: 2}
-  - {fileID: 11400000, guid: 230eccaae61073c41a7ae0592cb0fd3f, type: 2}
-  - {fileID: 11400000, guid: 0b75076f171be1242a03e4319e8e7f73, type: 2}
-  - {fileID: 11400000, guid: c76af2b3bbf8e3b43877fbb9545b5f87, type: 2}
-  - {fileID: 11400000, guid: 1846f74a6d3e7934981cf9e69334ac41, type: 2}
-  - {fileID: 11400000, guid: 3a2791b503cef734f9634393a674542b, type: 2}
-  - {fileID: 11400000, guid: c8b6b650beaeeb746b8a2568f969ed8e, type: 2}
-  - {fileID: 11400000, guid: 00037378462e4474ca184f3f0acdf441, type: 2}
+  - {fileID: 11400000, guid: f4e86d4fb919ffd48b614a1a0bc75d84, type: 2}
+  - {fileID: 11400000, guid: 01fb9219375c57749b8256273e4ebde2, type: 2}
+  - {fileID: 11400000, guid: 2daec23bd5b391b4b9cf5138749900b9, type: 2}
+  - {fileID: 11400000, guid: 02acc4e951ceb354bb18bbb08a54fee4, type: 2}
+  - {fileID: 11400000, guid: 8c23c506f5500f946a5e4ca8505185c7, type: 2}
+  - {fileID: 11400000, guid: ade6d05bd56c441499dca49fe81b1cff, type: 2}
+  - {fileID: 11400000, guid: e94b581cc5763e84e94cb4fa11f53253, type: 2}
+  - {fileID: 11400000, guid: 3a9779f58f963e74288663640dee5211, type: 2}
   WallTiles:
-  - {fileID: 11400000, guid: a7b2d9a664ce1c24ea23a9e54c28706d, type: 2}
-  - {fileID: 11400000, guid: d56f6f469617748498f06a363a36e8dc, type: 2}
+  - {fileID: 11400000, guid: dc5d25289e011304d82b53831e9dbdee, type: 2}
+  - {fileID: 11400000, guid: e100e67e00e07d14cab221e9b34beee9, type: 2}
   ExitCellPrefab: {fileID: 6680761949727546545, guid: 627f3f0e763014f4685bb87d67484c27, type: 3}
   SandFoodPrefabs:
   - {fileID: 3956412207362117015, guid: b1bbe919d00cdf145b9c6aa74d6dafc6, type: 3}
@@ -460,18 +460,18 @@ MonoBehaviour:
   SandEnemyPrefab: {fileID: 494316956775255757, guid: b6802b6f7fc8ac9479145524f05de0aa, type: 3}
   SandEliteEnemyPrefab: {fileID: 830596133146059099, guid: ef4c8b48fc78a784e991cc0f17d67964, type: 3}
   SandGroundTiles:
-  - {fileID: 11400000, guid: 42e851dbd4a0ebc40bd298ce9fce9711, type: 2}
-  - {fileID: 11400000, guid: ab2e0874e0e4cc749a4df9ed9bd7a47b, type: 2}
-  - {fileID: 11400000, guid: 4edae85ffd4a78941bafbbe2527ad5fc, type: 2}
-  - {fileID: 11400000, guid: 3965727aae5a6d94792ffe1fe4ea5d67, type: 2}
-  - {fileID: 11400000, guid: b59a341d9a4e6d9419f59712ba546304, type: 2}
-  - {fileID: 11400000, guid: a0b5775d886da7140be2f903246ff9b8, type: 2}
-  - {fileID: 11400000, guid: c047992ab1cf247458edf80eef67df59, type: 2}
-  - {fileID: 11400000, guid: fd7ebe7f82100b34687c89c0ec53d6b0, type: 2}
-  - {fileID: 11400000, guid: 543260a4e38b1a34abbd7679022c6ddc, type: 2}
+  - {fileID: 11400000, guid: fbf6b6587c6d6624091ef38ec5750077, type: 2}
+  - {fileID: 11400000, guid: f47b0ad717ee3aa4e925c2dd6563daee, type: 2}
+  - {fileID: 11400000, guid: 1bbc7ca6d6a43ed48a8bcc674fc043f9, type: 2}
+  - {fileID: 11400000, guid: b96a9d79f02739d4c940a4633305d41e, type: 2}
+  - {fileID: 11400000, guid: cc2fd43e173ce10458db268aecc4dd13, type: 2}
+  - {fileID: 11400000, guid: 82c59afc8ad73c0488229758dab9f722, type: 2}
+  - {fileID: 11400000, guid: a00463eafcd1ad44da7168e2951daa94, type: 2}
+  - {fileID: 11400000, guid: 24243c7742cf5b546be96a0a99325afa, type: 2}
+  - {fileID: 11400000, guid: 71ad08c532c2a5547923e6fbbdea5e2b, type: 2}
   SandWallTiles:
-  - {fileID: 11400000, guid: c7c464777cc12d84a89e8f84d71dd7e0, type: 2}
-  - {fileID: 11400000, guid: 6cde2f9a02aeb6849bdb44988ea4c761, type: 2}
+  - {fileID: 11400000, guid: b456ad27a9efe744389d240be291767f, type: 2}
+  - {fileID: 11400000, guid: 5501960b5e0f47f45a38f6a137b7c4a9, type: 2}
   SandExitCellPrefab: {fileID: 2552730009011964230, guid: 787b2286dcd357443a771b43dfb35c02, type: 3}
   SnowFoodPrefabs:
   - {fileID: 8096763889688325244, guid: be6b5e2e9e79ea2488af43319340588d, type: 3}
@@ -481,20 +481,20 @@ MonoBehaviour:
   SnowEnemyPrefab: {fileID: 4054759136145494434, guid: 0409ba71036be0541ac72200e3110c63, type: 3}
   SnowEliteEnemyPrefab: {fileID: 7528260785870264120, guid: 663e83b1affe6e940be84e71571a62fe, type: 3}
   SnowGroundTiles:
-  - {fileID: 11400000, guid: 5165cbe62d046eb4ab2492d4507dfae4, type: 2}
-  - {fileID: 11400000, guid: bfb79511fb8453e47ac1bdd3349a481f, type: 2}
-  - {fileID: 11400000, guid: 431716d8cc8e28246a83f8b0201c17ae, type: 2}
-  - {fileID: 11400000, guid: 50a4462a9636cbc498b34b29b1f3cd00, type: 2}
-  - {fileID: 11400000, guid: d09ba1c80f8909248880608022df8bd8, type: 2}
-  - {fileID: 11400000, guid: 87481fde026e48e418f46363e219e746, type: 2}
-  - {fileID: 11400000, guid: 49ddb7d92d5831840ad0e4f0b6abcc78, type: 2}
-  - {fileID: 11400000, guid: 2ffcde57d40f04e4396f15d0a6261323, type: 2}
+  - {fileID: 11400000, guid: 1f7faccbde791004c9e877c6bcf12d89, type: 2}
+  - {fileID: 11400000, guid: f5dc6658addf83d4a806676b4461d367, type: 2}
+  - {fileID: 11400000, guid: 065fb35935a59714885ac04fb4293871, type: 2}
+  - {fileID: 11400000, guid: 3931896459c8350468ebeea0e18cc38f, type: 2}
+  - {fileID: 11400000, guid: 5b14e93c54a4e2b479a14a4e67d94127, type: 2}
+  - {fileID: 11400000, guid: 69e44f84a181e7841a982f291434475c, type: 2}
+  - {fileID: 11400000, guid: a4b9347267fe9ec47bbb6594c2ff92a5, type: 2}
+  - {fileID: 11400000, guid: 3c7e7329de4d63748a72429e982807a3, type: 2}
   SnowWallTiles:
-  - {fileID: 11400000, guid: deb0090f1ae4f174492493c4efaa306c, type: 2}
+  - {fileID: 11400000, guid: 69e9603259bcaf84faf05e37f1a770e6, type: 2}
   SnowExitCellPrefab: {fileID: -219724357623271700, guid: f672474485ac2494dbf078b10ab51bb8, type: 3}
   MinFoodCount: 2
   MaxFoodCount: 6
-  Player: {fileID: 957377225}
+  Player: {fileID: 0}
   Width: 10
   Height: 10
 --- !u!1 &768006879
@@ -552,140 +552,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &957377222
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 957377224}
-  - component: {fileID: 957377223}
-  - component: {fileID: 957377225}
-  - component: {fileID: 957377226}
-  m_Layer: 0
-  m_Name: PlayerCharacter
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!212 &957377223
-SpriteRenderer:
-  serializedVersion: 2
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 957377222}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 10
-  m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: fbe1e7b94bb1a4a099d5bcb15a00141c, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_SpriteSortPoint: 0
---- !u!4 &957377224
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 957377222}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.5, y: 1.5, z: 2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &957377225
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 957377222}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d38220431955674ea65e9c23859d3ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MoveSpeed: 3.5
-  MoveSounds:
-  - {fileID: 8300000, guid: 892962212a4b74d1c9f578a3b6ea6439, type: 3}
-  AttackSounds:
-  - {fileID: 8300000, guid: 4c2332bc8245b474dad63074059bb755, type: 3}
-  HitSounds:
-  - {fileID: 8300000, guid: 25b1e3792b50ec6429fd64c4cabfff34, type: 3}
---- !u!95 &957377226
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 957377222}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: c0a751f86d7f7814a96506a40613cf7a, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1604438706
 GameObject:
   m_ObjectHideFlags: 0
@@ -766,7 +632,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4, y: 5, z: -10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: -10}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -853,9 +719,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BoardManager: {fileID: 607935308}
-  PlayerController: {fileID: 957377225}
+  PlayerController: {fileID: 0}
+  CharacterPrefabs:
+  - {fileID: 266681667125597957, guid: 7e951942f20b84a459f6ff09e6333947, type: 3}
+  - {fileID: 266681667125597957, guid: 609bd44f40c1ce64f8df108931ef16a8, type: 3}
+  - {fileID: 266681667125597957, guid: 9e064de385bf642448b6e3998bf22107, type: 3}
   UIDoc: {fileID: 768006880}
-  DevStartDay: 1
+  DevStartDay: 19
+  SelectedCharacter: 1
 --- !u!4 &2073671461
 Transform:
   m_ObjectHideFlags: 0
@@ -1004,7 +875,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 1604438709}
   - {fileID: 607935307}
-  - {fileID: 957377224}
   - {fileID: 2073671461}
   - {fileID: 768006881}
   - {fileID: 164975355}

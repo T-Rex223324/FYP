@@ -35,6 +35,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1241013154917200390
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -53,6 +54,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -74,10 +77,12 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 5
-  m_Sprite: {fileID: 0}
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 21300062, guid: d2b0867186472fd44a2b5575468d08b4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -85,8 +90,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
-  m_MaskInteraction: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!114 &550616899670956447
 MonoBehaviour:
@@ -100,6 +104,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e9404e078d49b4e843f2cab76ee8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ObstacleTile: {fileID: 11400000, guid: a7b2d9a664ce1c24ea23a9e54c28706d, type: 2}
-  DamagedTile: {fileID: 11400000, guid: d56f6f469617748498f06a363a36e8dc, type: 2}
+  ObstacleTile: {fileID: 11400000, guid: ef4cf08cb18ab5e47a454c1491876de2, type: 2}
+  DamagedTile: {fileID: 11400000, guid: 82cedabbea75b5343945ef066fb2d526, type: 2}
   MaxHealth: 5

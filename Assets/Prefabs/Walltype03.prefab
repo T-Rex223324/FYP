@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300044, guid: d2b0867186472fd44a2b5575468d08b4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -90,7 +90,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!114 &-6634869765907870135
 MonoBehaviour:
@@ -104,6 +104,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e9404e078d49b4e843f2cab76ee8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ObstacleTile: {fileID: 11400000, guid: f23d838575297aa47bf28fdf6c89f316, type: 2}
-  DamagedTile: {fileID: 11400000, guid: b1feb4908cc813347bf75a512c1e2e1f, type: 2}
+  ObstacleTile: {fileID: 11400000, guid: b12c0f15b6d4351468f864742cca32e0, type: 2}
+  DamagedTile: {fileID: 11400000, guid: 9add8678eea98ff44b5ee0b9ef8a0d2a, type: 2}
   MaxHealth: 3

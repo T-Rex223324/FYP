@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 1830010196, guid: 2315cc0495cb2054ea5dd392c1cff51e, type: 3}
+  m_Sprite: {fileID: -1906043261, guid: d37699ad9648fcb468c0462b0b5a1810, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e9404e078d49b4e843f2cab76ee8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ObstacleTile: {fileID: 11400000, guid: dd5f2462ec5cb1447b0b21bcdaacb4f4, type: 2}
+  ObstacleTile: {fileID: 11400000, guid: 7d24cee4cf769a5439e5469f9a3fb732, type: 2}
   DamagedTile: {fileID: 0}
   MaxHealth: 3
 --- !u!114 &-5986819680215382660
@@ -120,7 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d24a5c29f584a404e819ca1daa22d54f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cactus
-  ObstacleTile: {fileID: 11400000, guid: dd5f2462ec5cb1447b0b21bcdaacb4f4, type: 2}
+  ObstacleTile: {fileID: 11400000, guid: 7d24cee4cf769a5439e5469f9a3fb732, type: 2}
   DamagedTile: {fileID: 0}
   MaxHealth: 3
   Damage: 1

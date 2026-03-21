@@ -9,12 +9,21 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     public BoardManager BoardManager;
-    public PlayerController PlayerController;
+
+    // === NEW: Character Prefab List ===
+    // We hide this PlayerController from the Inspector so we don't accidentally drag anything into it.
+    [HideInInspector] public PlayerController PlayerController;
+
+    // This creates a list in the Unity Inspector where you will drop Bob, Steve, and Caso!
+    public PlayerController[] CharacterPrefabs;
+    // ==================================
+
     public UIDocument UIDoc;
     public TurnManager TurnManager { get; private set; }
 
     public int DevStartDay = 1;
     public bool IsPaused { get; private set; }
+    public int SelectedCharacter = 1;
 
     private int m_FoodAmount = 100;
     private Label m_FoodLabel;
@@ -31,6 +40,12 @@ public class GameManager : MonoBehaviour
 
     private Slider m_MusicSlider;
     private Slider m_SFXSlider;
+
+    private VisualElement m_CharacterSelectionPanel;
+    private Button m_Char1Button;
+    private Button m_Char2Button;
+    private Button m_Char3Button;
+    private Button m_BackButton;
 
     private int m_CurrentLevel = 1;
 
@@ -52,7 +67,9 @@ public class GameManager : MonoBehaviour
 
         m_MainMenuPanel = UIDoc.rootVisualElement.Q<VisualElement>("MainMenuPanel");
         m_PlayButton = m_MainMenuPanel.Q<Button>("PlayButton");
-        PlayerController.gameObject.SetActive(false);
+
+        // Note: I removed the old code that turned the player invisible here, 
+        // because we don't even spawn the player until the game starts now!
 
         if (m_PlayButton != null) m_PlayButton.clicked += StartGameFromMenu;
 
@@ -63,7 +80,6 @@ public class GameManager : MonoBehaviour
         if (m_ResumeButton != null) m_ResumeButton.clicked += ResumeGame;
         if (m_ExitMenuButton != null) m_ExitMenuButton.clicked += ReturnToMainMenu;
 
-        // === NEW: Hook up the Sliders! ===
         m_MusicSlider = m_PauseMenuPanel.Q<Slider>("MusicSlider");
         m_SFXSlider = m_PauseMenuPanel.Q<Slider>("SFXSlider");
 
@@ -82,8 +98,19 @@ public class GameManager : MonoBehaviour
                 if (SoundManager.Instance != null) SoundManager.Instance.SetSFXVolume(evt.newValue);
             });
         }
-        // =================================
 
+        m_CharacterSelectionPanel = UIDoc.rootVisualElement.Q<VisualElement>("CharacterSelectionPanel");
+        m_Char1Button = m_CharacterSelectionPanel.Q<Button>("Char1Button");
+        m_Char2Button = m_CharacterSelectionPanel.Q<Button>("Char2Button");
+        m_Char3Button = m_CharacterSelectionPanel.Q<Button>("Char3Button");
+        m_BackButton = m_CharacterSelectionPanel.Q<Button>("BackButton");
+
+        if (m_Char1Button != null) m_Char1Button.clicked += () => ChooseCharacterAndPlay(1);
+        if (m_Char2Button != null) m_Char2Button.clicked += () => ChooseCharacterAndPlay(2);
+        if (m_Char3Button != null) m_Char3Button.clicked += () => ChooseCharacterAndPlay(3);
+        if (m_BackButton != null) m_BackButton.clicked += CancelCharacterSelection;
+
+        m_CharacterSelectionPanel.style.visibility = Visibility.Hidden;
         m_PauseMenuPanel.style.visibility = Visibility.Hidden;
         m_MainMenuPanel.style.visibility = Visibility.Visible;
         m_GameOverPanel.style.visibility = Visibility.Hidden;
@@ -97,7 +124,8 @@ public class GameManager : MonoBehaviour
 
         if (Keyboard.current.escapeKey.wasPressedThisFrame &&
             m_MainMenuPanel.style.visibility == Visibility.Hidden &&
-            m_GameOverPanel.style.visibility == Visibility.Hidden)
+            m_GameOverPanel.style.visibility == Visibility.Hidden &&
+            m_CharacterSelectionPanel.style.visibility == Visibility.Hidden)
         {
             if (IsPaused) ResumeGame();
             else PauseGame();
@@ -120,6 +148,8 @@ public class GameManager : MonoBehaviour
 
     private void ReturnToMainMenu()
     {
+        if (SoundManager.Instance != null) SoundManager.Instance.StopMusic();
+
         IsPaused = false;
         m_PauseMenuPanel.style.visibility = Visibility.Hidden;
         m_FoodLabel.style.visibility = Visibility.Hidden;
@@ -127,11 +157,31 @@ public class GameManager : MonoBehaviour
 
         m_MainMenuPanel.style.visibility = Visibility.Visible;
         BoardManager.Clean();
+
+        // === NEW: Destroy the player when going back to the menu! ===
+        if (PlayerController != null)
+        {
+            Destroy(PlayerController.gameObject);
+        }
+        // ============================================================
     }
 
     private void StartGameFromMenu()
     {
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
+        m_CharacterSelectionPanel.style.visibility = Visibility.Visible;
+    }
+
+    private void CancelCharacterSelection()
+    {
+        m_CharacterSelectionPanel.style.visibility = Visibility.Hidden;
+        m_MainMenuPanel.style.visibility = Visibility.Visible;
+    }
+
+    private void ChooseCharacterAndPlay(int characterIndex)
+    {
+        SelectedCharacter = characterIndex;
+        m_CharacterSelectionPanel.style.visibility = Visibility.Hidden;
         m_FoodLabel.style.visibility = Visibility.Visible;
         m_DayLabel.style.visibility = Visibility.Visible;
         StartNewGame();
@@ -139,6 +189,8 @@ public class GameManager : MonoBehaviour
 
     public void StartNewGame()
     {
+        if (SoundManager.Instance != null) SoundManager.Instance.PlayRandomTrack();
+
         m_GameOverPanel.style.visibility = Visibility.Hidden;
         m_CurrentLevel = DevStartDay;
         m_FoodAmount = 100;
@@ -148,7 +200,18 @@ public class GameManager : MonoBehaviour
 
         BoardManager.Clean();
         BoardManager.Init(m_CurrentLevel);
-        PlayerController.gameObject.SetActive(true);
+
+        // === NEW: SPAWN THE CHOSEN PREFAB ===
+        // 1. Safety check to make sure you put the prefabs in the inspector!
+        if (CharacterPrefabs == null || CharacterPrefabs.Length == 0) return;
+
+        // 2. Arrays start at 0. So if SelectedCharacter is 1, we want index 0 (Bob).
+        int index = SelectedCharacter - 1;
+
+        // 3. Create the actual player prefab in the game!
+        PlayerController = Instantiate(CharacterPrefabs[index]);
+        // ====================================
+
         PlayerController.Init();
         PlayerController.Spawn(BoardManager, new Vector2Int(1, 1));
     }
