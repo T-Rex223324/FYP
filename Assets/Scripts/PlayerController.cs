@@ -12,28 +12,45 @@ public class PlayerController : MonoBehaviour
     private Vector3 m_MoveTarget;
     public float MoveSpeed = 5.0f;
 
-    // === CHANGED: AUDIO ARRAYS INSTEAD OF SINGLE CLIPS ===
+    [Header("Audio")]
     public AudioClip[] MoveSounds;
     public AudioClip[] AttackSounds;
     public AudioClip[] HitSounds;
-    // =====================================================
 
-    // Allow enemies to read the player's position
-    public Vector2Int Cell
-    {
-        get { return m_CellPosition; }
-    }
+    // === NEW: Character Stats ===
+    [Header("Character Stats")]
+    public int StartingFood = 100;
+    public int FoodDrainPerStep = 1;
+    public bool MovesTwicePerFood = false;
+    public int DamageTakenMultiplier = 1;
+    public float FoodPickupMultiplier = 1.0f;
+
+    // This tracks steps to calculate Steve's free movement
+    private int m_StepCounter = 0;
+    // ============================
+
+    public Vector2Int Cell { get { return m_CellPosition; } }
 
     private void Awake()
     {
         m_Animator = GetComponent<Animator>();
-        // Note: We removed the local AudioSource here because the SoundManager handles it now!
     }
 
     public void Init()
     {
         m_IsGameOver = false;
         m_IsMoving = false;
+        m_StepCounter = 0;
+
+        // === NEW: Apply Starting Food ===
+        // The GameManager automatically gives 100 food when the game starts. 
+        // Here, the player calculates the difference and applies it immediately!
+        int foodDifference = StartingFood - 100;
+        if (foodDifference != 0)
+        {
+            GameManager.Instance.ChangeFood(foodDifference);
+        }
+        // ================================
     }
 
     public void Spawn(BoardManager boardManager, Vector2Int cell)
@@ -44,11 +61,7 @@ public class PlayerController : MonoBehaviour
 
     public void MoveTo(Vector2Int cell, bool immediate)
     {
-        if (m_Board == null)
-        {
-            Debug.LogError("PlayerController: m_Board is null in MoveTo!");
-            return;
-        }
+        if (m_Board == null) return;
 
         m_CellPosition = cell;
 
@@ -62,12 +75,7 @@ public class PlayerController : MonoBehaviour
             m_IsMoving = true;
             m_MoveTarget = m_Board.CellToWorld(m_CellPosition);
 
-            // === CHANGED: CALL SOUND MANAGER FOR FOOTSTEPS ===
-            if (SoundManager.Instance != null)
-            {
-                SoundManager.Instance.RandomizeSfx(MoveSounds);
-            }
-            // =================================================
+            if (SoundManager.Instance != null) SoundManager.Instance.RandomizeSfx(MoveSounds);
         }
 
         m_Animator.SetBool("Moving", m_IsMoving);
@@ -78,28 +86,21 @@ public class PlayerController : MonoBehaviour
         m_IsGameOver = true;
     }
 
-    // Called by the Enemy when they attack
     public void TakeDamage(int damageAmount)
     {
-        // Play the "Hit" or "Damage" animation
+        // === NEW: Apply Steve's Double Damage Debuff ===
+        int finalDamage = damageAmount * DamageTakenMultiplier;
+        // ===============================================
+
         m_Animator.SetTrigger("Hit");
+        GameManager.Instance.ChangeFood(-finalDamage);
 
-        // Reduce food
-        GameManager.Instance.ChangeFood(-damageAmount);
-
-        // === CHANGED: CALL SOUND MANAGER FOR TAKING DAMAGE ===
-        if (SoundManager.Instance != null)
-        {
-            SoundManager.Instance.RandomizeSfx(HitSounds);
-        }
-        // =====================================================
+        if (SoundManager.Instance != null) SoundManager.Instance.RandomizeSfx(HitSounds);
     }
 
     private void Update()
     {
-        // === NEW: Stop moving if the game is paused! ===
         if (GameManager.Instance.IsPaused) return;
-
         if (m_Board == null) return;
 
         if (m_IsGameOver)
@@ -127,10 +128,8 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // Wait for a turn
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            // Trigger the turn manager without changing position
             GameManager.Instance.TurnManager.Tick();
             return;
         }
@@ -138,7 +137,6 @@ public class PlayerController : MonoBehaviour
         Vector2Int newCellTarget = m_CellPosition;
         bool hasMoved = false;
 
-        // Checks for Arrow Keys OR WASD Keys
         if (Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame)
         {
             newCellTarget.y += 1;
@@ -166,7 +164,23 @@ public class PlayerController : MonoBehaviour
 
             if (cellData != null && cellData.Passable)
             {
-                GameManager.Instance.TurnManager.Tick();
+                // === NEW: Apply Food Drain Passives/Debuffs ===
+                m_StepCounter++;
+                bool skipFoodDrain = (MovesTwicePerFood && m_StepCounter % 2 != 0);
+
+                GameManager.Instance.TurnManager.Tick(); // This automatically subtracts 1 food
+
+                if (FoodDrainPerStep > 1)
+                {
+                    // Bob consumes extra food
+                    GameManager.Instance.ChangeFood(-(FoodDrainPerStep - 1));
+                }
+                else if (skipFoodDrain)
+                {
+                    // Steve gets his 1 food refunded this turn!
+                    GameManager.Instance.ChangeFood(1);
+                }
+                // ==============================================
 
                 if (cellData.ContainedObject == null)
                 {
@@ -184,15 +198,20 @@ public class PlayerController : MonoBehaviour
                     {
                         m_Animator.SetTrigger("Attack");
 
-                        // === CHANGED: CALL SOUND MANAGER FOR CHOPPING/ATTACKING ===
                         if (SoundManager.Instance != null)
                         {
                             SoundManager.Instance.RandomizeSfx(AttackSounds);
                         }
-                        // ==========================================================
                     }
                 }
             }
         }
     }
+
+    // === NEW: Helper function for Caso's Food Multiplier ===
+    public int CalculateFoodPickup(int baseFoodAmount)
+    {
+        return Mathf.RoundToInt(baseFoodAmount * FoodPickupMultiplier);
+    }
+    // =======================================================
 }
