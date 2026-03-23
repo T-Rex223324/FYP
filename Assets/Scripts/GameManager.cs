@@ -13,6 +13,10 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public PlayerController PlayerController;
     public PlayerController[] CharacterPrefabs;
 
+    // === NEW: Floating Text Prefab ===
+    public GameObject FloatingTextPrefab;
+    // =================================
+
     public UIDocument UIDoc;
     public TurnManager TurnManager { get; private set; }
 
@@ -308,4 +312,20 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.DeleteKey("HasSave");
         if (m_ContinueButton != null) m_ContinueButton.style.display = DisplayStyle.None;
     }
+
+    // === NEW: Function to spawn floating text anywhere! ===
+    public void ShowFloatingText(string message, Vector3 position, bool isDamage = true)
+    {
+        if (FloatingTextPrefab != null)
+        {
+            // Spawn the text slightly above the character's head
+            Vector3 spawnPos = position + new Vector3(0, 0.5f, 0);
+            GameObject go = Instantiate(FloatingTextPrefab, spawnPos, Quaternion.identity);
+
+            FloatingText ft = go.GetComponent<FloatingText>();
+            if (ft != null) ft.Setup(message, isDamage);
+        }
+    }
+    // ======================================================
+
 }
