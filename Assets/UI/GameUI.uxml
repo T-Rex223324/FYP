@@ -49,4 +49,14 @@
             </ui:Button>
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="StatisticPanel" style="flex-grow: 1; position: absolute; width: 100%; height: 100%; background-color: rgb(51, 51, 51); top: auto; display: none;">
+        <ui:Label text="LIFETIME STAT" name="StatsTitle"/>
+        <ui:Button text="Back to Menu" name="CloseStatisticButton"/>
+        <ui:Label text="Label" name="StatsText" style="font-size: 10px; white-space: normal;"/>
+        <ui:Label text="TRANSFER DATA" name="TransferTitle"/>
+        <ui:Button text="Generate Transfer Code" name="GenerateCodeButton"/>
+        <ui:Label text="Your Code:" name="CodeDisplayLabel"/>
+        <ui:TextField label="Text Field" placeholder-text="filler text" name="InputCodeField"/>
+        <ui:Button text="Login with Code" name="LoginCodeButton"/>
+    </ui:VisualElement>
 </ui:UXML>

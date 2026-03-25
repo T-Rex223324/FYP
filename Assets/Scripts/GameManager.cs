@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 using UnityEngine.UIElements;
@@ -16,6 +16,18 @@ public class GameManager : MonoBehaviour
     // === NEW: Floating Text Prefab ===
     public GameObject FloatingTextPrefab;
     // =================================
+
+    // === NEW: Statistic & Account UI ===
+    private VisualElement m_StatisticPanel;
+    private Button m_StatisticButton;
+    private Button m_CloseStatisticButton;
+    private Label m_StatsText;
+
+    private Button m_GenerateCodeButton;
+    private Label m_CodeDisplayLabel;
+    private TextField m_InputCodeField;
+    private Button m_LoginCodeButton;
+    // ===================================
 
     public UIDocument UIDoc;
     public TurnManager TurnManager { get; private set; }
@@ -122,6 +134,27 @@ public class GameManager : MonoBehaviour
         m_GameOverPanel.style.visibility = Visibility.Hidden;
         m_FoodLabel.style.visibility = Visibility.Hidden;
         m_DayLabel.style.visibility = Visibility.Hidden;
+
+        // === NEW: Link Statistic UI ===
+        m_StatisticPanel = UIDoc.rootVisualElement.Q<VisualElement>("StatisticPanel");
+        m_StatisticButton = UIDoc.rootVisualElement.Q<Button>("StatisticButton");
+        m_CloseStatisticButton = UIDoc.rootVisualElement.Q<Button>("CloseStatisticButton");
+        m_StatsText = m_StatisticPanel?.Q<Label>("StatsText");
+
+        m_GenerateCodeButton = m_StatisticPanel?.Q<Button>("GenerateCodeButton");
+        m_CodeDisplayLabel = m_StatisticPanel?.Q<Label>("CodeDisplayLabel");
+        m_InputCodeField = m_StatisticPanel?.Q<TextField>("InputCodeField");
+        m_LoginCodeButton = m_StatisticPanel?.Q<Button>("LoginCodeButton");
+
+        // Click Events
+        if (m_StatisticButton != null) m_StatisticButton.clicked += OpenStatisticPanel;
+        if (m_CloseStatisticButton != null) m_CloseStatisticButton.clicked += CloseStatisticPanel;
+        if (m_GenerateCodeButton != null) m_GenerateCodeButton.clicked += OnGenerateCodeClicked;
+        if (m_LoginCodeButton != null) m_LoginCodeButton.clicked += OnLoginCodeClicked;
+
+        if (m_StatisticPanel != null) m_StatisticPanel.style.display = DisplayStyle.None;
+        // ==============================
+
     }
 
     private void Update()
@@ -319,7 +352,7 @@ public class GameManager : MonoBehaviour
         if (FloatingTextPrefab != null)
         {
             // Spawn the text slightly above the character's head
-            Vector3 spawnPos = position + new Vector3(0, 0.5f, 0);
+            Vector3 spawnPos = position + new Vector3(0, 0.5f, -2f);
             GameObject go = Instantiate(FloatingTextPrefab, spawnPos, Quaternion.identity);
 
             FloatingText ft = go.GetComponent<FloatingText>();
@@ -327,5 +360,59 @@ public class GameManager : MonoBehaviour
         }
     }
     // ======================================================
+
+    // === NEW: Statistic & Transfer Code Logic ===
+    private void OpenStatisticPanel()
+    {
+        m_MainMenuPanel.style.visibility = Visibility.Hidden;
+        m_StatisticPanel.style.display = DisplayStyle.Flex;
+
+        // Fetch the stats from the StatisticsManager and write them into the label!
+        if (StatisticsManager.Instance != null && m_StatsText != null)
+        {
+            var lifetime = StatisticsManager.Instance.GameStats.Lifetime;
+            m_StatsText.text =
+                "Total Runs: " + lifetime.TotalRuns + "\n" +
+                "Total Days Survived: " + lifetime.TotalDaysSurvived + "\n" +
+                "Total Food Eaten: " + lifetime.TotalFoodEaten + "\n" +
+                "Total Damage Taken: " + lifetime.TotalHitsTaken;
+        }
+    }
+
+    private void CloseStatisticPanel()
+    {
+        m_StatisticPanel.style.display = DisplayStyle.None;
+        m_MainMenuPanel.style.visibility = Visibility.Visible;
+    }
+
+    private async void OnGenerateCodeClicked()
+    {
+        Debug.Log("Generate Button Clicked!"); // <--- ADD THIS LINE
+
+        if (UGSManager.Instance != null && m_CodeDisplayLabel != null)
+        {
+            m_CodeDisplayLabel.text = "Generating...";
+            string newCode = await UGSManager.Instance.GenerateTransferCode();
+            m_CodeDisplayLabel.text = "Your Code: " + newCode;
+        }
+        else
+        {
+            Debug.LogError("Lỗi: UGSManager hoặc Label đang bị NULL!"); // <--- ADD THIS LINE
+        }
+    }
+
+    private void OnLoginCodeClicked()
+    {
+        if (UGSManager.Instance != null && m_InputCodeField != null)
+        {
+            string codeToUse = m_InputCodeField.value.Trim(); // Get what the player typed
+            if (!string.IsNullOrEmpty(codeToUse))
+            {
+                UGSManager.Instance.LoginWithTransferCode(codeToUse);
+            }
+        }
+    }
+
+   
 
 }
