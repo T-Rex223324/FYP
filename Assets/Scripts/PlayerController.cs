@@ -88,13 +88,24 @@ public class PlayerController : MonoBehaviour
 
     public void TakeDamage(int damageAmount)
     {
+<<<<<<< HEAD
         // === NEW: Apply Steve's Double Damage Debuff ===
         int finalDamage = damageAmount * DamageTakenMultiplier;
         // ===============================================
+=======
+        int finalDamage = damageAmount * DamageTakenMultiplier;
+>>>>>>> origin/matser
 
         m_Animator.SetTrigger("Hit");
         GameManager.Instance.ChangeFood(-finalDamage);
 
+<<<<<<< HEAD
+=======
+        // === NEW: SPIT OUT FLOATING TEXT! ===
+        GameManager.Instance.ShowFloatingText("-" + finalDamage, transform.position, true);
+        // ====================================
+
+>>>>>>> origin/matser
         if (SoundManager.Instance != null) SoundManager.Instance.RandomizeSfx(HitSounds);
     }
 

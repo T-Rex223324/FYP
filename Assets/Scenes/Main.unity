@@ -370,6 +370,53 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+<<<<<<< HEAD
+=======
+--- !u!1 &269811519
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 269811521}
+  - component: {fileID: 269811520}
+  m_Layer: 0
+  m_Name: UGSManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &269811520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269811519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 602049e6df50e924eb09bb6faf860f17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UGSManager
+--- !u!4 &269811521
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269811519}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+>>>>>>> origin/matser
 --- !u!1 &607935305
 GameObject:
   m_ObjectHideFlags: 0
@@ -724,8 +771,14 @@ MonoBehaviour:
   - {fileID: 266681667125597957, guid: 7e951942f20b84a459f6ff09e6333947, type: 3}
   - {fileID: 266681667125597957, guid: 609bd44f40c1ce64f8df108931ef16a8, type: 3}
   - {fileID: 266681667125597957, guid: 9e064de385bf642448b6e3998bf22107, type: 3}
+<<<<<<< HEAD
   UIDoc: {fileID: 768006880}
   DevStartDay: 19
+=======
+  FloatingTextPrefab: {fileID: 2055663993954504164, guid: cc77ba6a3c082454aa383023fac202fd, type: 3}
+  UIDoc: {fileID: 768006880}
+  DevStartDay: 1
+>>>>>>> origin/matser
   SelectedCharacter: 1
 --- !u!4 &2073671461
 Transform:
@@ -878,3 +931,7 @@ SceneRoots:
   - {fileID: 2073671461}
   - {fileID: 768006881}
   - {fileID: 164975355}
+<<<<<<< HEAD
+=======
+  - {fileID: 269811521}
+>>>>>>> origin/matser
