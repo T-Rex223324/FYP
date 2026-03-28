@@ -39,7 +39,7 @@ public class WallObject : CellObject
 
             return false;
         }
-
+        if (StatisticsManager.Instance != null) StatisticsManager.Instance.AddWallBroken(gameObject.name);
         GameManager.Instance.BoardManager.SetCellTile(m_Cell, m_OriginalTile);
         Destroy(gameObject);
         return true;
