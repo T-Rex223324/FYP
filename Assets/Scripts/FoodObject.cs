@@ -16,7 +16,7 @@ public class FoodObject : CellObject
             SoundManager.Instance.RandomizeSfx(EatSounds);
         }
         // ==============================
-
+        if (StatisticsManager.Instance != null) StatisticsManager.Instance.AddFoodEaten(gameObject.name);
         // Destroy the food item from the board
         Destroy(gameObject);
 

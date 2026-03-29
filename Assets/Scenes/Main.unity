@@ -370,8 +370,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-<<<<<<< HEAD
-=======
 --- !u!1 &269811519
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,7 +414,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
->>>>>>> origin/matser
 --- !u!1 &607935305
 GameObject:
   m_ObjectHideFlags: 0
@@ -736,6 +733,77 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1604438706}
   m_Enabled: 1
+--- !u!1 &2043207501
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2043207503}
+  - component: {fileID: 2043207502}
+  m_Layer: 0
+  m_Name: StatisticsManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2043207502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043207501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fc5268bb22ed544bbdc3fb2c33abea9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatisticsManager
+  GameStats:
+    Lifetime:
+      TotalRuns: 0
+      TotalWins: 0
+      HighestDaySurvived: 0
+      TotalSteps: 0
+      TotalFoodEaten: 0
+      SmallFoodEaten: 0
+      SodaDrank: 0
+      BurgersEaten: 0
+      TotalWallsBroken: 0
+      WallType1Broken: 0
+      WallType2Broken: 0
+      CactusBroken: 0
+      PinkRockBroken: 0
+      TotalMonstersKilled: 0
+      NormalEnemiesKilled: 0
+      EliteEnemiesKilled: 0
+      TotalHitsTaken: 0
+    PastRuns: []
+  CurrentRun:
+    RunNumber: 0
+    CharacterName: 
+    DaysSurvived: 0
+    StepsTaken: 0
+    WallsBroken: 0
+    MonstersKilled: 0
+--- !u!4 &2043207503
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043207501}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2073671459
 GameObject:
   m_ObjectHideFlags: 0
@@ -771,14 +839,9 @@ MonoBehaviour:
   - {fileID: 266681667125597957, guid: 7e951942f20b84a459f6ff09e6333947, type: 3}
   - {fileID: 266681667125597957, guid: 609bd44f40c1ce64f8df108931ef16a8, type: 3}
   - {fileID: 266681667125597957, guid: 9e064de385bf642448b6e3998bf22107, type: 3}
-<<<<<<< HEAD
-  UIDoc: {fileID: 768006880}
-  DevStartDay: 19
-=======
   FloatingTextPrefab: {fileID: 2055663993954504164, guid: cc77ba6a3c082454aa383023fac202fd, type: 3}
   UIDoc: {fileID: 768006880}
   DevStartDay: 1
->>>>>>> origin/matser
   SelectedCharacter: 1
 --- !u!4 &2073671461
 Transform:
@@ -931,7 +994,5 @@ SceneRoots:
   - {fileID: 2073671461}
   - {fileID: 768006881}
   - {fileID: 164975355}
-<<<<<<< HEAD
-=======
   - {fileID: 269811521}
->>>>>>> origin/matser
+  - {fileID: 2043207503}

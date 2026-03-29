@@ -63,6 +63,7 @@ public class Enemy : CellObject
 
         if (m_CurrentHealth <= 0)
         {
+            if (StatisticsManager.Instance != null) StatisticsManager.Instance.AddMonsterKilled(gameObject.name.Contains("Elite"));
             Destroy(gameObject);
         }
         return false;

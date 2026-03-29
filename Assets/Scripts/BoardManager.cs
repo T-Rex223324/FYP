@@ -2,8 +2,6 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
-<<<<<<< HEAD
-=======
 // === CHANGED: Added a specific SaveWall struct to remember the exact wall type! ===
 [System.Serializable]
 public struct SavePos { public int x, y; }
@@ -23,7 +21,6 @@ public class BoardSaveData
 }
 // =================================================================================
 
->>>>>>> origin/matser
 public class BoardManager : MonoBehaviour
 {
     public class CellData
@@ -39,11 +36,7 @@ public class BoardManager : MonoBehaviour
     public GameObject EliteEnemyPrefab;
     public Tile[] GroundTiles;
     public Tile[] WallTiles;
-<<<<<<< HEAD
-    public ExitCellObject ExitCellPrefab; // <-- HERE IS THE URBAN EXIT
-=======
     public ExitCellObject ExitCellPrefab;
->>>>>>> origin/matser
 
     [Header("--- SAND THEME (Days 11 - 20) ---")]
     public GameObject[] SandFoodPrefabs;
@@ -52,11 +45,7 @@ public class BoardManager : MonoBehaviour
     public GameObject SandEliteEnemyPrefab;
     public Tile[] SandGroundTiles;
     public Tile[] SandWallTiles;
-<<<<<<< HEAD
-    public ExitCellObject SandExitCellPrefab; // <-- HERE IS THE NEW SAND EXIT
-=======
     public ExitCellObject SandExitCellPrefab;
->>>>>>> origin/matser
 
     [Header("--- SNOW THEME (Days 21 - 30+) ---")]
     public GameObject[] SnowFoodPrefabs;
@@ -65,11 +54,7 @@ public class BoardManager : MonoBehaviour
     public GameObject SnowEliteEnemyPrefab;
     public Tile[] SnowGroundTiles;
     public Tile[] SnowWallTiles;
-<<<<<<< HEAD
-    public ExitCellObject SnowExitCellPrefab; // <-- HERE IS THE NEW SNOW EXIT
-=======
     public ExitCellObject SnowExitCellPrefab;
->>>>>>> origin/matser
 
     [Header("--- GENERAL SETTINGS ---")]
     public int MinFoodCount = 5;
@@ -84,28 +69,16 @@ public class BoardManager : MonoBehaviour
     private List<Vector2Int> m_EmptyCellsList;
     private int m_CurrentDayCycle;
 
-<<<<<<< HEAD
-    // These variables will temporarily hold whichever theme is currently active!
-=======
->>>>>>> origin/matser
     private Tile[] m_ActiveGroundTiles;
     private Tile[] m_ActiveWallTiles;
     private WallObject[] m_ActiveWallPrefabs;
     private GameObject[] m_ActiveFoodPrefabs;
     private GameObject m_ActiveEnemyPrefab;
     private GameObject m_ActiveEliteEnemyPrefab;
-<<<<<<< HEAD
-    private ExitCellObject m_ActiveExitCellPrefab; // <-- THIS HOLDS THE CORRECT EXIT GATE!
-
-    public void Init(int currentLevel)
-    {
-        // === THE MAGIC SWITCH: ASSIGN THEME BASED ON LEVEL ===
-=======
     private ExitCellObject m_ActiveExitCellPrefab;
 
     private void SetupTheme(int currentLevel)
     {
->>>>>>> origin/matser
         if (currentLevel <= 10)
         {
             m_ActiveGroundTiles = GroundTiles;
@@ -114,11 +87,7 @@ public class BoardManager : MonoBehaviour
             m_ActiveFoodPrefabs = FoodPrefabs;
             m_ActiveEnemyPrefab = EnemyPrefab;
             m_ActiveEliteEnemyPrefab = EliteEnemyPrefab;
-<<<<<<< HEAD
-            m_ActiveExitCellPrefab = ExitCellPrefab; // Sets Urban Exit
-=======
             m_ActiveExitCellPrefab = ExitCellPrefab;
->>>>>>> origin/matser
         }
         else if (currentLevel <= 20)
         {
@@ -128,11 +97,7 @@ public class BoardManager : MonoBehaviour
             m_ActiveFoodPrefabs = SandFoodPrefabs;
             m_ActiveEnemyPrefab = SandEnemyPrefab;
             m_ActiveEliteEnemyPrefab = SandEliteEnemyPrefab;
-<<<<<<< HEAD
-            m_ActiveExitCellPrefab = SandExitCellPrefab; // Sets Sand Exit
-=======
             m_ActiveExitCellPrefab = SandExitCellPrefab;
->>>>>>> origin/matser
         }
         else
         {
@@ -142,19 +107,6 @@ public class BoardManager : MonoBehaviour
             m_ActiveFoodPrefabs = SnowFoodPrefabs;
             m_ActiveEnemyPrefab = SnowEnemyPrefab;
             m_ActiveEliteEnemyPrefab = SnowEliteEnemyPrefab;
-<<<<<<< HEAD
-            m_ActiveExitCellPrefab = SnowExitCellPrefab; // Sets Snow Exit
-        }
-        // =====================================================
-
-        m_CurrentDayCycle = ((currentLevel - 1) % 10) + 1;
-
-        int sizeIncrease = m_CurrentDayCycle / 3;
-        int dynamicSize = 8 + sizeIncrease;
-
-        Width = dynamicSize;
-        Height = dynamicSize;
-=======
             m_ActiveExitCellPrefab = SnowExitCellPrefab;
         }
     }
@@ -167,7 +119,6 @@ public class BoardManager : MonoBehaviour
         int sizeIncrease = m_CurrentDayCycle / 3;
         Width = 8 + sizeIncrease;
         Height = 8 + sizeIncrease;
->>>>>>> origin/matser
 
         m_Tilemap = GetComponentInChildren<Tilemap>();
         m_Grid = GetComponentInChildren<Grid>();
@@ -192,35 +143,19 @@ public class BoardManager : MonoBehaviour
                     m_BoardData[x, y].Passable = true;
                     m_EmptyCellsList.Add(new Vector2Int(x, y));
                 }
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/matser
                 m_Tilemap.SetTile(new Vector3Int(x, y, 0), tile);
             }
         }
 
         m_EmptyCellsList.Remove(new Vector2Int(1, 1));
-<<<<<<< HEAD
-
-        Vector2Int endCoord = new Vector2Int(Width - 2, Height - 2);
-
-        // === HERE IS WHERE IT SPAWNS THE ACTIVE EXIT GATE ===
-        AddObject(Instantiate(m_ActiveExitCellPrefab), endCoord);
-        // ====================================================
-
-=======
         Vector2Int endCoord = new Vector2Int(Width - 2, Height - 2);
         AddObject(Instantiate(m_ActiveExitCellPrefab), endCoord);
->>>>>>> origin/matser
         m_EmptyCellsList.Remove(endCoord);
 
         GenerateWall();
         GenerateFood();
         GenerateEnemy();
 
-<<<<<<< HEAD
-=======
         SetupCamera();
     }
 
@@ -348,7 +283,6 @@ public class BoardManager : MonoBehaviour
 
     private void SetupCamera()
     {
->>>>>>> origin/matser
         float centerX = (Width - 1) / 2.0f;
         float centerY = (Height - 1) / 2.0f;
         Camera.main.transform.position = new Vector3(centerX, centerY, -10f);
@@ -376,14 +310,7 @@ public class BoardManager : MonoBehaviour
 
     public CellData GetCellData(Vector2Int cellIndex)
     {
-<<<<<<< HEAD
-        if (cellIndex.x < 0 || cellIndex.x >= Width || cellIndex.y < 0 || cellIndex.y >= Height)
-        {
-            return null;
-        }
-=======
         if (cellIndex.x < 0 || cellIndex.x >= Width || cellIndex.y < 0 || cellIndex.y >= Height) return null;
->>>>>>> origin/matser
         return m_BoardData[cellIndex.x, cellIndex.y];
     }
 
@@ -413,21 +340,10 @@ public class BoardManager : MonoBehaviour
         for (int i = 0; i < foodCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0) break;
-<<<<<<< HEAD
-
-            int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
-            Vector2Int coord = m_EmptyCellsList[randomIndex];
-            m_EmptyCellsList.RemoveAt(randomIndex);
-
-            GameObject prefabToSpawn = m_ActiveFoodPrefabs[Random.Range(0, m_ActiveFoodPrefabs.Length)];
-
-            GameObject newFood = Instantiate(prefabToSpawn);
-=======
             int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
             GameObject newFood = Instantiate(m_ActiveFoodPrefabs[Random.Range(0, m_ActiveFoodPrefabs.Length)]);
->>>>>>> origin/matser
             AddObject(newFood.GetComponent<FoodObject>(), coord);
         }
     }
@@ -435,33 +351,6 @@ public class BoardManager : MonoBehaviour
     void GenerateWall()
     {
         int sizeIncrease = m_CurrentDayCycle / 3;
-<<<<<<< HEAD
-        int extraWalls = sizeIncrease * 2;
-        int wallCount = Random.Range(6 + extraWalls, 10 + extraWalls);
-
-        List<WallObject> allowedWalls = new List<WallObject>();
-
-        if (m_ActiveWallPrefabs.Length >= 3)
-        {
-            if (m_CurrentDayCycle >= 1 && m_CurrentDayCycle <= 3)
-            {
-                allowedWalls.Add(m_ActiveWallPrefabs[0]);
-            }
-            else if (m_CurrentDayCycle >= 4 && m_CurrentDayCycle <= 7)
-            {
-                allowedWalls.Add(m_ActiveWallPrefabs[0]);
-                allowedWalls.Add(m_ActiveWallPrefabs[1]);
-            }
-            else
-            {
-                allowedWalls.AddRange(m_ActiveWallPrefabs);
-            }
-        }
-        else
-        {
-            allowedWalls.AddRange(m_ActiveWallPrefabs);
-        }
-=======
         int wallCount = Random.Range(6 + (sizeIncrease * 2), 10 + (sizeIncrease * 2));
 
         List<WallObject> allowedWalls = new List<WallObject>();
@@ -472,72 +361,19 @@ public class BoardManager : MonoBehaviour
             else allowedWalls.AddRange(m_ActiveWallPrefabs);
         }
         else allowedWalls.AddRange(m_ActiveWallPrefabs);
->>>>>>> origin/matser
 
         for (int i = 0; i < wallCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0) break;
-<<<<<<< HEAD
-
-            int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
-            Vector2Int coord = m_EmptyCellsList[randomIndex];
-            m_EmptyCellsList.RemoveAt(randomIndex);
-
-            WallObject prefab = allowedWalls[Random.Range(0, allowedWalls.Count)];
-            WallObject newWall = Instantiate(prefab);
-            AddObject(newWall, coord);
-=======
             int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
             AddObject(Instantiate(allowedWalls[Random.Range(0, allowedWalls.Count)]), coord);
->>>>>>> origin/matser
         }
     }
 
     void GenerateEnemy()
     {
-<<<<<<< HEAD
-        int minEnemies = 1;
-        int maxEnemies = 1;
-
-        if (m_CurrentDayCycle == 1)
-        {
-            minEnemies = 1;
-            maxEnemies = 1;
-        }
-        else if (m_CurrentDayCycle >= 2 && m_CurrentDayCycle <= 3)
-        {
-            minEnemies = 1;
-            maxEnemies = 2;
-        }
-        else if (m_CurrentDayCycle >= 4 && m_CurrentDayCycle <= 6)
-        {
-            minEnemies = 1;
-            maxEnemies = 3;
-        }
-        else
-        {
-            minEnemies = 2;
-            maxEnemies = 4;
-        }
-
-        int enemyCount = Random.Range(minEnemies, maxEnemies + 1);
-
-        if (m_CurrentDayCycle == 10 && m_ActiveEliteEnemyPrefab != null)
-        {
-            if (m_EmptyCellsList.Count > 0)
-            {
-                int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
-                Vector2Int coord = m_EmptyCellsList[randomIndex];
-                m_EmptyCellsList.RemoveAt(randomIndex);
-
-                GameObject newEliteObj = Instantiate(m_ActiveEliteEnemyPrefab);
-                Enemy eliteEnemy = newEliteObj.GetComponent<Enemy>();
-
-                if (eliteEnemy != null) AddObject(eliteEnemy, coord);
-            }
-=======
         int minEnemies = (m_CurrentDayCycle <= 3) ? 1 : (m_CurrentDayCycle <= 6 ? 1 : 2);
         int maxEnemies = (m_CurrentDayCycle == 1) ? 1 : (m_CurrentDayCycle <= 3 ? 2 : (m_CurrentDayCycle <= 6 ? 3 : 4));
         int enemyCount = Random.Range(minEnemies, maxEnemies + 1);
@@ -548,28 +384,15 @@ public class BoardManager : MonoBehaviour
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
             AddObject(Instantiate(m_ActiveEliteEnemyPrefab).GetComponent<Enemy>(), coord);
->>>>>>> origin/matser
         }
 
         for (int i = 0; i < enemyCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0) break;
-<<<<<<< HEAD
-
-            int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
-            Vector2Int coord = m_EmptyCellsList[randomIndex];
-            m_EmptyCellsList.RemoveAt(randomIndex);
-
-            GameObject newEnemyObj = Instantiate(m_ActiveEnemyPrefab);
-            Enemy newEnemy = newEnemyObj.GetComponent<Enemy>();
-
-            if (newEnemy != null) AddObject(newEnemy, coord);
-=======
             int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
             Vector2Int coord = m_EmptyCellsList[randomIndex];
             m_EmptyCellsList.RemoveAt(randomIndex);
             AddObject(Instantiate(m_ActiveEnemyPrefab).GetComponent<Enemy>(), coord);
->>>>>>> origin/matser
         }
     }
 }

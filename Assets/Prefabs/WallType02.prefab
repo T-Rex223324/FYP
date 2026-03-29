@@ -104,11 +104,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e9404e078d49b4e843f2cab76ee8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< HEAD
-  ObstacleTile: {fileID: 11400000, guid: ef4cf08cb18ab5e47a454c1491876de2, type: 2}
-  DamagedTile: {fileID: 11400000, guid: 82cedabbea75b5343945ef066fb2d526, type: 2}
-=======
   ObstacleTile: {fileID: 11400000, guid: dc5d25289e011304d82b53831e9dbdee, type: 2}
   DamagedTile: {fileID: 11400000, guid: d3e7d50f2d211194995f939ff00bf79d, type: 2}
->>>>>>> origin/matser
   MaxHealth: 5

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-using UnityEditor;
-=======
 ﻿using UnityEditor;
->>>>>>> origin/matser
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 using UnityEngine.UIElements;
@@ -14,23 +10,12 @@ public class GameManager : MonoBehaviour
 
     public BoardManager BoardManager;
 
-<<<<<<< HEAD
-    // === NEW: Character Prefab List ===
-    // We hide this PlayerController from the Inspector so we don't accidentally drag anything into it.
-    [HideInInspector] public PlayerController PlayerController;
-
-    // This creates a list in the Unity Inspector where you will drop Bob, Steve, and Caso!
-    public PlayerController[] CharacterPrefabs;
-    // ==================================
-=======
     [HideInInspector] public PlayerController PlayerController;
     public PlayerController[] CharacterPrefabs;
 
-    // === NEW: Floating Text Prefab ===
     public GameObject FloatingTextPrefab;
-    // =================================
 
-    // === NEW: Statistic & Account UI ===
+    // === Statistic & Account UI ===
     private VisualElement m_StatisticPanel;
     private Button m_StatisticButton;
     private Button m_CloseStatisticButton;
@@ -38,10 +23,11 @@ public class GameManager : MonoBehaviour
 
     private Button m_GenerateCodeButton;
     private Label m_CodeDisplayLabel;
+    private Button m_CopyCodeButton;
+    private string m_GeneratedCode = "";
     private TextField m_InputCodeField;
     private Button m_LoginCodeButton;
     // ===================================
->>>>>>> origin/matser
 
     public UIDocument UIDoc;
     public TurnManager TurnManager { get; private set; }
@@ -58,10 +44,7 @@ public class GameManager : MonoBehaviour
 
     private VisualElement m_MainMenuPanel;
     private Button m_PlayButton;
-<<<<<<< HEAD
-=======
     private Button m_ContinueButton;
->>>>>>> origin/matser
 
     private VisualElement m_PauseMenuPanel;
     private Button m_ResumeButton;
@@ -97,10 +80,6 @@ public class GameManager : MonoBehaviour
         m_MainMenuPanel = UIDoc.rootVisualElement.Q<VisualElement>("MainMenuPanel");
         m_PlayButton = m_MainMenuPanel.Q<Button>("PlayButton");
 
-<<<<<<< HEAD
-        // Note: I removed the old code that turned the player invisible here, 
-        // because we don't even spawn the player until the game starts now!
-=======
         m_ContinueButton = m_MainMenuPanel.Q<Button>("ContinueButton");
         if (m_ContinueButton != null)
         {
@@ -110,7 +89,6 @@ public class GameManager : MonoBehaviour
             else
                 m_ContinueButton.style.display = DisplayStyle.None;
         }
->>>>>>> origin/matser
 
         if (m_PlayButton != null) m_PlayButton.clicked += StartGameFromMenu;
 
@@ -131,10 +109,6 @@ public class GameManager : MonoBehaviour
                 if (SoundManager.Instance != null) SoundManager.Instance.SetMusicVolume(evt.newValue);
             });
         }
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/matser
         if (m_SFXSlider != null)
         {
             m_SFXSlider.RegisterValueChangedCallback(evt =>
@@ -160,30 +134,30 @@ public class GameManager : MonoBehaviour
         m_GameOverPanel.style.visibility = Visibility.Hidden;
         m_FoodLabel.style.visibility = Visibility.Hidden;
         m_DayLabel.style.visibility = Visibility.Hidden;
-<<<<<<< HEAD
-=======
 
-        // === NEW: Link Statistic UI ===
+        // Statistic UI Link
         m_StatisticPanel = UIDoc.rootVisualElement.Q<VisualElement>("StatisticPanel");
         m_StatisticButton = UIDoc.rootVisualElement.Q<Button>("StatisticButton");
         m_CloseStatisticButton = UIDoc.rootVisualElement.Q<Button>("CloseStatisticButton");
-        m_StatsText = m_StatisticPanel?.Q<Label>("StatsText");
+
+        // === CHANGED: Search the entire root document just to be safe! ===
+        m_StatsText = UIDoc.rootVisualElement.Q<Label>("StatsText");
+        // =================================================================
 
         m_GenerateCodeButton = m_StatisticPanel?.Q<Button>("GenerateCodeButton");
         m_CodeDisplayLabel = m_StatisticPanel?.Q<Label>("CodeDisplayLabel");
+        m_CopyCodeButton = m_StatisticPanel?.Q<Button>("CopyCodeButton");
+        if (m_CopyCodeButton != null) m_CopyCodeButton.clicked += CopyCodeToClipboard;
         m_InputCodeField = m_StatisticPanel?.Q<TextField>("InputCodeField");
+        m_InputCodeField.Q("unity-text-input").style.color = Color.black;
         m_LoginCodeButton = m_StatisticPanel?.Q<Button>("LoginCodeButton");
 
-        // Click Events
         if (m_StatisticButton != null) m_StatisticButton.clicked += OpenStatisticPanel;
         if (m_CloseStatisticButton != null) m_CloseStatisticButton.clicked += CloseStatisticPanel;
         if (m_GenerateCodeButton != null) m_GenerateCodeButton.clicked += OnGenerateCodeClicked;
         if (m_LoginCodeButton != null) m_LoginCodeButton.clicked += OnLoginCodeClicked;
 
         if (m_StatisticPanel != null) m_StatisticPanel.style.display = DisplayStyle.None;
-        // ==============================
-
->>>>>>> origin/matser
     }
 
     private void Update()
@@ -199,11 +173,7 @@ public class GameManager : MonoBehaviour
             else PauseGame();
         }
 
-<<<<<<< HEAD
-        if (Keyboard.current.tabKey.wasPressedThisFrame) NewLevel();
-=======
         if (Keyboard.current.tabKey.wasPressedThisFrame && PlayerController != null) NewLevel();
->>>>>>> origin/matser
     }
 
     private void PauseGame()
@@ -220,14 +190,11 @@ public class GameManager : MonoBehaviour
 
     private void ReturnToMainMenu()
     {
-<<<<<<< HEAD
-=======
         PlayerPrefs.SetInt("SavedDay", m_CurrentLevel);
         PlayerPrefs.SetInt("SavedFood", m_FoodAmount);
         PlayerPrefs.SetInt("SavedChar", SelectedCharacter);
         PlayerPrefs.SetInt("HasSave", 1);
 
-        // === CHANGED: WE NOW SAVE THE MAP AND PLAYER COORDINATES ===
         if (PlayerController != null)
         {
             PlayerPrefs.SetInt("PlayerX", PlayerController.Cell.x);
@@ -235,12 +202,9 @@ public class GameManager : MonoBehaviour
         }
         string mapJson = BoardManager.SaveMap();
         PlayerPrefs.SetString("SavedMap", mapJson);
-        // ===========================================================
-
         PlayerPrefs.Save();
 
         if (m_ContinueButton != null) m_ContinueButton.style.display = DisplayStyle.Flex;
->>>>>>> origin/matser
         if (SoundManager.Instance != null) SoundManager.Instance.StopMusic();
 
         IsPaused = false;
@@ -251,16 +215,9 @@ public class GameManager : MonoBehaviour
         m_MainMenuPanel.style.visibility = Visibility.Visible;
         BoardManager.Clean();
 
-<<<<<<< HEAD
-        // === NEW: Destroy the player when going back to the menu! ===
-        if (PlayerController != null)
-        {
-            Destroy(PlayerController.gameObject);
-        }
-        // ============================================================
-=======
         if (PlayerController != null) Destroy(PlayerController.gameObject);
->>>>>>> origin/matser
+
+        if (UGSManager.Instance != null) UGSManager.Instance.SyncLocalToCloud();
     }
 
     private void StartGameFromMenu()
@@ -284,8 +241,6 @@ public class GameManager : MonoBehaviour
         StartNewGame();
     }
 
-<<<<<<< HEAD
-=======
     private void ContinueSavedGame()
     {
         m_CurrentLevel = PlayerPrefs.GetInt("SavedDay");
@@ -302,11 +257,9 @@ public class GameManager : MonoBehaviour
 
         if (SoundManager.Instance != null) SoundManager.Instance.PlayRandomTrack();
 
-        // === CHANGED: CALL THE NEW LOAD MAP FUNCTION ===
         BoardManager.Clean();
         string savedMap = PlayerPrefs.GetString("SavedMap");
         BoardManager.LoadMap(m_CurrentLevel, savedMap);
-        // ===============================================
 
         if (CharacterPrefabs != null && CharacterPrefabs.Length > 0)
         {
@@ -315,18 +268,17 @@ public class GameManager : MonoBehaviour
             PlayerController.Init();
             SetFoodExact(m_FoodAmount);
 
-            // === CHANGED: SPAWN PLAYER EXACTLY WHERE THEY SAVED ===
             int pX = PlayerPrefs.GetInt("PlayerX", 1);
             int pY = PlayerPrefs.GetInt("PlayerY", 1);
             PlayerController.Spawn(BoardManager, new Vector2Int(pX, pY));
-            // ======================================================
         }
     }
 
->>>>>>> origin/matser
     public void StartNewGame()
     {
         if (SoundManager.Instance != null) SoundManager.Instance.PlayRandomTrack();
+
+        if (StatisticsManager.Instance != null) StatisticsManager.Instance.StartNewRun(SelectedCharacter);
 
         m_GameOverPanel.style.visibility = Visibility.Hidden;
         m_CurrentLevel = DevStartDay;
@@ -338,21 +290,6 @@ public class GameManager : MonoBehaviour
         BoardManager.Clean();
         BoardManager.Init(m_CurrentLevel);
 
-<<<<<<< HEAD
-        // === NEW: SPAWN THE CHOSEN PREFAB ===
-        // 1. Safety check to make sure you put the prefabs in the inspector!
-        if (CharacterPrefabs == null || CharacterPrefabs.Length == 0) return;
-
-        // 2. Arrays start at 0. So if SelectedCharacter is 1, we want index 0 (Bob).
-        int index = SelectedCharacter - 1;
-
-        // 3. Create the actual player prefab in the game!
-        PlayerController = Instantiate(CharacterPrefabs[index]);
-        // ====================================
-
-        PlayerController.Init();
-        PlayerController.Spawn(BoardManager, new Vector2Int(1, 1));
-=======
         if (CharacterPrefabs != null && CharacterPrefabs.Length > 0)
         {
             int index = SelectedCharacter - 1;
@@ -360,7 +297,6 @@ public class GameManager : MonoBehaviour
             PlayerController.Init();
             PlayerController.Spawn(BoardManager, new Vector2Int(1, 1));
         }
->>>>>>> origin/matser
     }
 
     public void NewLevel()
@@ -370,26 +306,22 @@ public class GameManager : MonoBehaviour
 
         if (m_CurrentLevel == 31)
         {
-<<<<<<< HEAD
-            PlayerController.GameOver();
-            m_GameOverPanel.style.visibility = Visibility.Visible;
-            m_GameOverMessage.text = "You is the winner. Thank you for play my video game";
-=======
+            if (StatisticsManager.Instance != null)
+            {
+                StatisticsManager.Instance.AddWin();
+                StatisticsManager.Instance.EndRun(m_CurrentLevel);
+            }
+
             if (PlayerController != null) PlayerController.GameOver();
             m_GameOverPanel.style.visibility = Visibility.Visible;
             m_GameOverMessage.text = "You is the winner. Thank you for play my video game";
             ClearSaveData();
->>>>>>> origin/matser
             return;
         }
 
         BoardManager.Clean();
         BoardManager.Init(m_CurrentLevel);
-<<<<<<< HEAD
-        PlayerController.Spawn(BoardManager, new Vector2Int(1, 1));
-=======
         if (PlayerController != null) PlayerController.Spawn(BoardManager, new Vector2Int(1, 1));
->>>>>>> origin/matser
     }
 
     void OnTurnHappen() { ChangeFood(-1); }
@@ -399,15 +331,13 @@ public class GameManager : MonoBehaviour
         m_FoodAmount += amount;
         m_FoodLabel.text = "Food : " + m_FoodAmount;
 
+        if (StatisticsManager.Instance != null)
+            StatisticsManager.Instance.UpdateHighestFood(m_FoodAmount);
+
         if (m_FoodAmount <= 0)
         {
-<<<<<<< HEAD
-            PlayerController.GameOver();
-            m_GameOverPanel.style.visibility = Visibility.Visible;
-            m_GameOverMessage.text = "Game Over!\n\nSurvived " + m_CurrentLevel + " days";
-        }
-    }
-=======
+            if (StatisticsManager.Instance != null) StatisticsManager.Instance.EndRun(m_CurrentLevel);
+
             if (PlayerController != null) PlayerController.GameOver();
             m_GameOverPanel.style.visibility = Visibility.Visible;
             m_GameOverMessage.text = "Game Over!\n\nSurvived " + m_CurrentLevel + " days";
@@ -425,14 +355,13 @@ public class GameManager : MonoBehaviour
     {
         PlayerPrefs.DeleteKey("HasSave");
         if (m_ContinueButton != null) m_ContinueButton.style.display = DisplayStyle.None;
+        if (UGSManager.Instance != null) UGSManager.Instance.DeleteCloudSave();
     }
 
-    // === NEW: Function to spawn floating text anywhere! ===
     public void ShowFloatingText(string message, Vector3 position, bool isDamage = true)
     {
         if (FloatingTextPrefab != null)
         {
-            // Spawn the text slightly above the character's head
             Vector3 spawnPos = position + new Vector3(0, 0.5f, -2f);
             GameObject go = Instantiate(FloatingTextPrefab, spawnPos, Quaternion.identity);
 
@@ -440,24 +369,68 @@ public class GameManager : MonoBehaviour
             if (ft != null) ft.Setup(message, isDamage);
         }
     }
-    // ======================================================
 
-    // === NEW: Statistic & Transfer Code Logic ===
     private void OpenStatisticPanel()
     {
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
         m_StatisticPanel.style.display = DisplayStyle.Flex;
 
-        // Fetch the stats from the StatisticsManager and write them into the label!
-        if (StatisticsManager.Instance != null && m_StatsText != null)
+        if (StatisticsManager.Instance == null)
         {
-            var lifetime = StatisticsManager.Instance.GameStats.Lifetime;
-            m_StatsText.text =
-                "Total Runs: " + lifetime.TotalRuns + "\n" +
-                "Total Days Survived: " + lifetime.TotalDaysSurvived + "\n" +
-                "Total Food Eaten: " + lifetime.TotalFoodEaten + "\n" +
-                "Total Damage Taken: " + lifetime.TotalHitsTaken;
+            Debug.LogError("LỖI: StatisticsManager is missing from the scene!");
+            return;
         }
+        if (m_StatsText == null)
+        {
+            Debug.LogError("LỖI: Cannot find 'StatsText'! Check the exact name in UI Builder.");
+            return;
+        }
+
+        var lifetime = StatisticsManager.Instance.GameStats.Lifetime;
+
+        // Using Rich Text to add colors and bolding!
+        m_StatsText.text =
+            $"<color=#FACC15><b>--- PERSONAL BESTS (Single Run) ---</b></color>\n" +
+            $"Longest Survival: <color=#FFFFFF>Day {lifetime.HighestDaySurvived}</color>\n" +
+            $"Highest Food Held: <color=#FFFFFF>{lifetime.HighestFoodHeld}</color>\n" +
+            $"Most Monsters Defeated: <color=#FFFFFF>{lifetime.MostMonstersKilledInOneRun}</color>\n" +
+            $"Most Walls Mined: <color=#FFFFFF>{lifetime.MostWallsBrokenInOneRun}</color>\n\n" +
+
+            $"<color=#38BDF8><b>--- LIFETIME TOTALS ---</b></color>\n" +
+            $"Total Runs: <color=#FFFFFF>{lifetime.TotalRuns}</color>  |  Wins: <color=#FFFFFF>{lifetime.TotalWins}</color>\n" +
+            $"Total Steps Walked: <color=#FFFFFF>{lifetime.TotalSteps}</color>\n\n" +
+
+            $"<color=#4ADE80><b>--- FOOD CONSUMED ---</b></color>\n" +
+            $"Total: <color=#FFFFFF>{lifetime.TotalFoodEaten}</color> (Small: {lifetime.SmallFoodEaten}, Soda: {lifetime.SodaDrank}, Burger: {lifetime.BurgersEaten})\n\n" +
+
+            $"<color=#A78BFA><b>--- WALLS DESTROYED ---</b></color>\n" +
+            $"Total: <color=#FFFFFF>{lifetime.TotalWallsBroken}</color> (Normal: {lifetime.WallType1Broken}, Type 2: {lifetime.WallType2Broken}, Cactus: {lifetime.CactusBroken}, Pink Rock: {lifetime.PinkRockBroken})\n\n" +
+
+            $"<color=#F87171><b>--- MONSTERS DEFEATED ---</b></color>\n" +
+            $"Total: <color=#FFFFFF>{lifetime.TotalMonstersKilled}</color> (Normal: {lifetime.NormalEnemiesKilled}, Elite: {lifetime.EliteEnemiesKilled})\n\n" +
+
+            $"Damage Taken: <color=#FF8A65>{lifetime.TotalHitsTaken}</color>";
+
+        // === NEW: INSTANTLY LOAD THE STICKY CODE ===
+        if (m_CodeDisplayLabel != null)
+        {
+            string savedCode = PlayerPrefs.GetString("TransferCode", "");
+            if (!string.IsNullOrEmpty(savedCode))
+            {
+                // If the player already has a code, show it immediately!
+                m_CodeDisplayLabel.text = "Your Code: " + savedCode;
+                m_GeneratedCode = savedCode; // Make sure the "Copy" button works immediately too!
+            }
+            else
+            {
+                // If they've never generated a code, tell them
+                m_CodeDisplayLabel.text = "Your Code: Not Generated";
+            }
+        }
+
+        // Reset the copy button text just in case it said "Copied!" previously
+        if (m_CopyCodeButton != null) m_CopyCodeButton.text = "Copy Code";
+        // ============================================
     }
 
     private void CloseStatisticPanel()
@@ -468,25 +441,47 @@ public class GameManager : MonoBehaviour
 
     private async void OnGenerateCodeClicked()
     {
-        Debug.Log("Generate Button Clicked!"); // <--- ADD THIS LINE
+        Debug.Log("Generate Button Clicked!");
 
         if (UGSManager.Instance != null && m_CodeDisplayLabel != null)
         {
             m_CodeDisplayLabel.text = "Generating...";
-            string newCode = await UGSManager.Instance.GenerateTransferCode();
-            m_CodeDisplayLabel.text = "Your Code: " + newCode;
+
+            // Save the raw code into our new variable so we can copy it later!
+            m_GeneratedCode = await UGSManager.Instance.GenerateTransferCode();
+            m_CodeDisplayLabel.text = "Your Code: " + m_GeneratedCode;
+
+            // Reset the copy button text just in case they generate a new one
+            if (m_CopyCodeButton != null) m_CopyCodeButton.text = "Copy Code";
         }
         else
         {
-            Debug.LogError("Lỗi: UGSManager hoặc Label đang bị NULL!"); // <--- ADD THIS LINE
+            Debug.LogError("Lỗi: UGSManager hoặc Label đang bị NULL!");
         }
     }
+
+    // === NEW: The function that actually copies the text! ===
+    private void CopyCodeToClipboard()
+    {
+        // Make sure there is actually a code to copy!
+        if (!string.IsNullOrEmpty(m_GeneratedCode))
+        {
+            // This single line of code tells Unity to copy to your PC/Browser clipboard!
+            GUIUtility.systemCopyBuffer = m_GeneratedCode;
+
+            Debug.Log("Code copied to clipboard: " + m_GeneratedCode);
+
+            // Give the player visual feedback so they know it worked!
+            if (m_CopyCodeButton != null) m_CopyCodeButton.text = "Copied!";
+        }
+    }
+    // ========================================================
 
     private void OnLoginCodeClicked()
     {
         if (UGSManager.Instance != null && m_InputCodeField != null)
         {
-            string codeToUse = m_InputCodeField.value.Trim(); // Get what the player typed
+            string codeToUse = m_InputCodeField.value.Trim();
             if (!string.IsNullOrEmpty(codeToUse))
             {
                 UGSManager.Instance.LoginWithTransferCode(codeToUse);
@@ -494,7 +489,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-   
 
->>>>>>> origin/matser
+
+
+
 }

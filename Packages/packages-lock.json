@@ -174,8 +174,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-<<<<<<< HEAD
-=======
     "com.unity.nuget.newtonsoft-json": {
       "version": "3.2.2",
       "depth": 1,
@@ -183,7 +181,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
->>>>>>> origin/matser
     "com.unity.render-pipelines.core": {
       "version": "17.3.0",
       "depth": 1,
@@ -223,8 +220,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-<<<<<<< HEAD
-=======
     "com.unity.services.authentication": {
       "version": "3.6.0",
       "depth": 0,
@@ -268,7 +263,6 @@
       },
       "url": "https://packages.unity.com"
     },
->>>>>>> origin/matser
     "com.unity.shadergraph": {
       "version": "17.3.0",
       "depth": 1,
