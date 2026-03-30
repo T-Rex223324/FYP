@@ -767,7 +767,19 @@ MonoBehaviour:
       TotalRuns: 0
       TotalWins: 0
       HighestDaySurvived: 0
+      BestRun:
+        RunNumber: 0
+        CharacterName: 
+        DaysSurvived: 0
+        StepsTaken: 0
+        TurnsTaken: 0
+        WallsBroken: 0
+        MonstersKilled: 0
       TotalSteps: 0
+      TotalTurns: 0
+      HighestFoodHeld: 0
+      MostMonstersKilledInOneRun: 0
+      MostWallsBrokenInOneRun: 0
       TotalFoodEaten: 0
       SmallFoodEaten: 0
       SodaDrank: 0
@@ -787,6 +799,7 @@ MonoBehaviour:
     CharacterName: 
     DaysSurvived: 0
     StepsTaken: 0
+    TurnsTaken: 0
     WallsBroken: 0
     MonstersKilled: 0
 --- !u!4 &2043207503
@@ -841,7 +854,7 @@ MonoBehaviour:
   - {fileID: 266681667125597957, guid: 9e064de385bf642448b6e3998bf22107, type: 3}
   FloatingTextPrefab: {fileID: 2055663993954504164, guid: cc77ba6a3c082454aa383023fac202fd, type: 3}
   UIDoc: {fileID: 768006880}
-  DevStartDay: 1
+  DevStartDay: 30
   SelectedCharacter: 1
 --- !u!4 &2073671461
 Transform:

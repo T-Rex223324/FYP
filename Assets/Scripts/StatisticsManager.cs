@@ -1,4 +1,4 @@
-using UnityEngine;
+    using UnityEngine;
 using System.Collections.Generic;
 
 [System.Serializable]
@@ -8,6 +8,7 @@ public class RunStats
     public string CharacterName;
     public int DaysSurvived;
     public int StepsTaken;
+    public int TurnsTaken;
     public int WallsBroken;
     public int MonstersKilled;
 }
@@ -18,7 +19,9 @@ public class LifetimeStats
     public int TotalRuns;
     public int TotalWins;
     public int HighestDaySurvived;
+    public RunStats BestRun;
     public int TotalSteps;
+    public int TotalTurns;
 
     public int HighestFoodHeld;
     public int MostMonstersKilledInOneRun;
@@ -83,16 +86,58 @@ public class StatisticsManager : MonoBehaviour
         if (finalDay > GameStats.Lifetime.HighestDaySurvived)
             GameStats.Lifetime.HighestDaySurvived = finalDay;
 
-        // === NEW: Check for Personal Bests! ===
+        // Check for Personal Bests!
         if (CurrentRun.MonstersKilled > GameStats.Lifetime.MostMonstersKilledInOneRun)
             GameStats.Lifetime.MostMonstersKilledInOneRun = CurrentRun.MonstersKilled;
 
         if (CurrentRun.WallsBroken > GameStats.Lifetime.MostWallsBrokenInOneRun)
             GameStats.Lifetime.MostWallsBrokenInOneRun = CurrentRun.WallsBroken;
-        // ======================================
 
-        GameStats.PastRuns.Add(CurrentRun);
-        SaveStats();
+        // === NEW: ONLY RECORD THE BEST RUN IF IT IS A WIN (DAY 31) ===
+        if (finalDay >= 31)
+        {
+            bool isNewBest = false;
+
+            // If they have never won before, this is automatically the best run!
+            if (GameStats.Lifetime.BestRun == null || GameStats.Lifetime.BestRun.DaysSurvived == 0)
+            {
+                isNewBest = true;
+            }
+            else
+            {
+                // If they ALREADY have a winning run, compare them! 
+                // (We now calculate the score using all 4 tracked run statistics!)
+                int currentScore = CurrentRun.MonstersKilled + CurrentRun.WallsBroken + CurrentRun.StepsTaken + CurrentRun.DaysSurvived;
+
+                int oldBestScore = GameStats.Lifetime.BestRun.MonstersKilled + GameStats.Lifetime.BestRun.WallsBroken + GameStats.Lifetime.BestRun.StepsTaken + GameStats.Lifetime.BestRun.DaysSurvived;
+
+                if (currentScore > oldBestScore)
+                {
+                    isNewBest = true; // The new run scored higher overall!
+                }
+            }
+
+            // If the new run won the comparison, overwrite the old Best Run!
+            // If the new run won the comparison, overwrite the old Best Run!
+            if (isNewBest)
+            {
+                GameStats.Lifetime.BestRun = new RunStats
+                {
+                    RunNumber = CurrentRun.RunNumber,
+                    CharacterName = CurrentRun.CharacterName,
+                    DaysSurvived = CurrentRun.DaysSurvived,
+                    StepsTaken = CurrentRun.StepsTaken,
+                    TurnsTaken = CurrentRun.TurnsTaken, // <--- Add this line!
+                    WallsBroken = CurrentRun.WallsBroken,
+                    MonstersKilled = CurrentRun.MonstersKilled
+                };
+            }
+        }
+        // =============================================================
+
+        // WE DELETED THE "PastRuns.Add(CurrentRun)" LINE SO IT STOPS SAVING 1000 RUNS!
+
+        SaveStats(); // Instantly push this optimized data to the Cloud
     }
 
     // === NEW DETAILED TRACKING FUNCTIONS ===
@@ -103,6 +148,11 @@ public class StatisticsManager : MonoBehaviour
     {
         if (CurrentRun != null) CurrentRun.StepsTaken++;
         GameStats.Lifetime.TotalSteps++;
+    }
+    public void AddTurn()
+    {
+        if (CurrentRun != null) CurrentRun.TurnsTaken++;
+        GameStats.Lifetime.TotalTurns++;
     }
 
     public void AddFoodEaten(string foodName)

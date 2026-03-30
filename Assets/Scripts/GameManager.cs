@@ -324,7 +324,17 @@ public class GameManager : MonoBehaviour
         if (PlayerController != null) PlayerController.Spawn(BoardManager, new Vector2Int(1, 1));
     }
 
-    void OnTurnHappen() { ChangeFood(-1); }
+    void OnTurnHappen()
+    {
+        ChangeFood(-1);
+
+        // === NEW: Tell Statistics Manager a turn happened! ===
+        if (StatisticsManager.Instance != null)
+        {
+            StatisticsManager.Instance.AddTurn();
+        }
+        // =====================================================
+    }
 
     public void ChangeFood(int amount)
     {
@@ -387,10 +397,26 @@ public class GameManager : MonoBehaviour
         }
 
         var lifetime = StatisticsManager.Instance.GameStats.Lifetime;
+       
+
+        // === NEW: FIND THE BEST RUN ===
+        RunStats bestRun = lifetime.BestRun;
+
+        string bestRunText = "You haven't beaten the game yet!";
+
+        // Only show the stats if they actually have a recorded win
+        if (bestRun != null && bestRun.DaysSurvived >= 31)
+        {
+            // === CHANGED: Accurate terminology! ===
+            bestRunText = $"The {bestRun.RunNumber} try: {bestRun.CharacterName} - Day {bestRun.DaysSurvived} | {bestRun.StepsTaken} Moves | {bestRun.TurnsTaken} Turns | {bestRun.MonstersKilled} Kills | {bestRun.WallsBroken} Walls";
+            // ======================================
+        }
+        // ==============================
 
         // Using Rich Text to add colors and bolding!
         m_StatsText.text =
             $"<color=#FACC15><b>--- PERSONAL BESTS (Single Run) ---</b></color>\n" +
+            $"Greatest Attempt: <color=#FFFFFF>{bestRunText}</color>\n" +
             $"Longest Survival: <color=#FFFFFF>Day {lifetime.HighestDaySurvived}</color>\n" +
             $"Highest Food Held: <color=#FFFFFF>{lifetime.HighestFoodHeld}</color>\n" +
             $"Most Monsters Defeated: <color=#FFFFFF>{lifetime.MostMonstersKilledInOneRun}</color>\n" +
@@ -411,26 +437,23 @@ public class GameManager : MonoBehaviour
 
             $"Damage Taken: <color=#FF8A65>{lifetime.TotalHitsTaken}</color>";
 
-        // === NEW: INSTANTLY LOAD THE STICKY CODE ===
+        // INSTANTLY LOAD THE STICKY CODE
         if (m_CodeDisplayLabel != null)
         {
             string savedCode = PlayerPrefs.GetString("TransferCode", "");
             if (!string.IsNullOrEmpty(savedCode))
             {
-                // If the player already has a code, show it immediately!
                 m_CodeDisplayLabel.text = "Your Code: " + savedCode;
-                m_GeneratedCode = savedCode; // Make sure the "Copy" button works immediately too!
+                m_GeneratedCode = savedCode;
             }
             else
             {
-                // If they've never generated a code, tell them
                 m_CodeDisplayLabel.text = "Your Code: Not Generated";
             }
         }
 
-        // Reset the copy button text just in case it said "Copied!" previously
+        // Reset the copy button text
         if (m_CopyCodeButton != null) m_CopyCodeButton.text = "Copy Code";
-        // ============================================
     }
 
     private void CloseStatisticPanel()
