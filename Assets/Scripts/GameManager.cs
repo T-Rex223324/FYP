@@ -27,6 +27,10 @@ public class GameManager : MonoBehaviour
     private string m_GeneratedCode = "";
     private TextField m_InputCodeField;
     private Button m_LoginCodeButton;
+    private VisualElement m_KickPopupPanel;
+    private Label m_KickTitleLabel; // <--- New Title Reference
+    private Label m_KickMessageLabel; // <--- New Message Reference
+    private Button m_KickOkButton;
     // ===================================
 
     public UIDocument UIDoc;
@@ -81,6 +85,20 @@ public class GameManager : MonoBehaviour
         m_PlayButton = m_MainMenuPanel.Q<Button>("PlayButton");
 
         m_ContinueButton = m_MainMenuPanel.Q<Button>("ContinueButton");
+
+        // === NEW: Link the Kick Popup ===
+        m_KickPopupPanel = UIDoc.rootVisualElement.Q<VisualElement>("KickPopupPanel");
+        m_KickOkButton = UIDoc.rootVisualElement.Q<Button>("KickOkButton");
+
+        // --- Added links for the new icon and labels ---
+        m_KickTitleLabel = m_KickPopupPanel?.Q<Label>("KickTitleLabel");
+        m_KickMessageLabel = m_KickPopupPanel?.Q<Label>("KickMessageLabel");
+        // ------------------------------------------------
+
+        if (m_KickOkButton != null) m_KickOkButton.clicked += OnKickOkClicked;
+        if (m_KickPopupPanel != null) m_KickPopupPanel.style.display = DisplayStyle.None;
+        // ================================
+
         if (m_ContinueButton != null)
         {
             m_ContinueButton.clicked += ContinueSavedGame;
@@ -151,7 +169,11 @@ public class GameManager : MonoBehaviour
         m_InputCodeField = m_StatisticPanel?.Q<TextField>("InputCodeField");
         m_InputCodeField.Q("unity-text-input").style.color = Color.black;
         m_LoginCodeButton = m_StatisticPanel?.Q<Button>("LoginCodeButton");
+        m_KickPopupPanel = UIDoc.rootVisualElement.Q<VisualElement>("KickPopupPanel");
+        m_KickOkButton = UIDoc.rootVisualElement.Q<Button>("KickOkButton");
 
+        if (m_KickOkButton != null) m_KickOkButton.clicked += OnKickOkClicked;
+        if (m_KickPopupPanel != null) m_KickPopupPanel.style.display = DisplayStyle.None;
         if (m_StatisticButton != null) m_StatisticButton.clicked += OpenStatisticPanel;
         if (m_CloseStatisticButton != null) m_CloseStatisticButton.clicked += CloseStatisticPanel;
         if (m_GenerateCodeButton != null) m_GenerateCodeButton.clicked += OnGenerateCodeClicked;
@@ -322,6 +344,8 @@ public class GameManager : MonoBehaviour
         BoardManager.Clean();
         BoardManager.Init(m_CurrentLevel);
         if (PlayerController != null) PlayerController.Spawn(BoardManager, new Vector2Int(1, 1));
+
+        AutoSaveGame();
     }
 
     void OnTurnHappen()
@@ -384,17 +408,6 @@ public class GameManager : MonoBehaviour
     {
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
         m_StatisticPanel.style.display = DisplayStyle.Flex;
-
-        if (StatisticsManager.Instance == null)
-        {
-            Debug.LogError("LỖI: StatisticsManager is missing from the scene!");
-            return;
-        }
-        if (m_StatsText == null)
-        {
-            Debug.LogError("LỖI: Cannot find 'StatsText'! Check the exact name in UI Builder.");
-            return;
-        }
 
         var lifetime = StatisticsManager.Instance.GameStats.Lifetime;
        
@@ -512,7 +525,54 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void ShowKickPopup()
+    {
+        // 1. Pause the game so nothing happens in the background while they read!
+        IsPaused = true;
 
+        // 2. Hide all other menus to make the screen clean
+        if (m_PauseMenuPanel != null) m_PauseMenuPanel.style.visibility = Visibility.Hidden;
+        if (m_StatisticPanel != null) m_StatisticPanel.style.display = DisplayStyle.None;
+        if (m_GameOverPanel != null) m_GameOverPanel.style.visibility = Visibility.Hidden;
+        if (m_CharacterSelectionPanel != null) m_CharacterSelectionPanel.style.visibility = Visibility.Hidden;
+
+        // 3. Show the urgent warning messenger box!
+        if (m_KickPopupPanel != null) m_KickPopupPanel.style.display = DisplayStyle.Flex;
+    }
+
+    private void OnKickOkClicked()
+    {
+        // Tell UGSManager to actually execute the kick and reload the scene!
+        if (UGSManager.Instance != null) UGSManager.Instance.ExecuteKickAndReload();
+    }
+    // ============================
+
+
+    // === NEW: AUTO-SAVE SYSTEM ===
+    public void AutoSaveGame()
+    {
+        // 1. Save all current local data
+        PlayerPrefs.SetInt("SavedDay", m_CurrentLevel);
+        PlayerPrefs.SetInt("SavedFood", m_FoodAmount);
+        PlayerPrefs.SetInt("SavedChar", SelectedCharacter);
+        PlayerPrefs.SetInt("HasSave", 1);
+
+        if (PlayerController != null)
+        {
+            PlayerPrefs.SetInt("PlayerX", PlayerController.Cell.x);
+            PlayerPrefs.SetInt("PlayerY", PlayerController.Cell.y);
+        }
+
+        string mapJson = BoardManager.SaveMap();
+        PlayerPrefs.SetString("SavedMap", mapJson);
+        PlayerPrefs.Save();
+
+        // 2. Push it silently to the Cloud!
+        if (UGSManager.Instance != null) UGSManager.Instance.SyncLocalToCloud();
+
+        Debug.Log("Auto-Saved at Day " + m_CurrentLevel);
+    }
+    // =============================
 
 
 

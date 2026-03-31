@@ -1,12 +1,16 @@
-﻿using UnityEngine;
-using Unity.Services.Core;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Services.Authentication;
 using Unity.Services.CloudSave;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Unity.Services.Core;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 public class UGSManager : MonoBehaviour
 {
+
+    public bool IsCloudSyncDisabled = false;
+
     public static UGSManager Instance { get; private set; }
 
     private string m_LocalDeviceToken;
@@ -51,6 +55,7 @@ public class UGSManager : MonoBehaviour
 
                 Debug.Log("Đã kết nối Cloud! ID: " + AuthenticationService.Instance.PlayerId);
                 await CheckAndSyncCloudToLocal();
+                //StartCoroutine(HeartbeatRoutine());
             }
         }
         catch (System.Exception e)
@@ -66,7 +71,7 @@ public class UGSManager : MonoBehaviour
         string existingCode = PlayerPrefs.GetString("TransferCode", "");
         if (!string.IsNullOrEmpty(existingCode))
         {
-            Debug.Log("You already have a code! Showing existing code: " + existingCode);
+            //Debug.Log("You already have a code! Showing existing code: " + existingCode);
             return existingCode;
         }
         // ==========================================================================
@@ -94,12 +99,20 @@ public class UGSManager : MonoBehaviour
     {
         try
         {
+            // === NEW: Tell the UI to show a loading message! ===
+            if (GameManager.Instance != null)
+            {
+                // We borrow the Code Display label to show the loading status!
+                var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
+                if (displayLabel != null) displayLabel.text = "Syncing Cloud Data... Please Wait...";
+            }
+            // ===================================================
+
             if (AuthenticationService.Instance.IsSignedIn)
             {
                 AuthenticationService.Instance.SignOut();
             }
 
-            // === FIXED: Login using Username/Password ===
             await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(codeToUse, SECRET_PASSWORD);
 
             PlayerPrefs.SetString("TransferCode", codeToUse);
@@ -111,6 +124,13 @@ public class UGSManager : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogError("Mã không hợp lệ: " + e.Message);
+
+            // Reset the text if it fails
+            if (GameManager.Instance != null)
+            {
+                var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
+                if (displayLabel != null) displayLabel.text = "Error: Invalid Code!";
+            }
         }
     }
 
@@ -126,16 +146,23 @@ public class UGSManager : MonoBehaviour
             var keys = new HashSet<string> { "DeviceToken", "GameStatistics", "SavedMap", "SavedDay", "SavedFood", "SavedChar", "PlayerX", "PlayerY", "HasSave" };
             var savedData = await CloudSaveService.Instance.Data.Player.LoadAsync(keys);
 
+            // 1. Check if the token exists on the cloud
             if (!forceOverwriteCloudToken && savedData.TryGetValue("DeviceToken", out var cloudTokenItem))
             {
-                string cloudToken = cloudTokenItem.Value.GetAsString();
-                if (cloudToken != m_LocalDeviceToken)
+                // 2. Check if we are a Guest
+                bool isGuest = string.IsNullOrEmpty(PlayerPrefs.GetString("TransferCode", ""));
+
+                // 3. If we are NOT a guest, compare the tokens!
+                if (!isGuest)
                 {
-                    KickPlayerOut();
-                    return;
+                    string cloudToken = cloudTokenItem.Value.GetAsString();
+                    if (cloudToken != m_LocalDeviceToken)
+                    {
+                        KickPlayerOut();
+                        return;
+                    }
                 }
             }
-
             if (savedData.TryGetValue("GameStatistics", out var statsItem)) PlayerPrefs.SetString("GameStatistics", statsItem.Value.GetAsString());
             if (savedData.TryGetValue("SavedMap", out var mapItem)) PlayerPrefs.SetString("SavedMap", mapItem.Value.GetAsString());
             if (savedData.TryGetValue("SavedDay", out var dayItem)) PlayerPrefs.SetInt("SavedDay", dayItem.Value.GetAs<int>());
@@ -161,6 +188,7 @@ public class UGSManager : MonoBehaviour
 
     public async void SyncLocalToCloud()
     {
+        if (IsCloudSyncDisabled) return;
         try
         {
             var keys = new HashSet<string> { "DeviceToken" };
@@ -169,7 +197,11 @@ public class UGSManager : MonoBehaviour
             if (savedData.TryGetValue("DeviceToken", out var cloudTokenItem))
             {
                 string cloudToken = cloudTokenItem.Value.GetAsString();
-                if (cloudToken != m_LocalDeviceToken)
+
+                // === NEW FIX: Don't kick Guests! ===
+                bool isGuest = string.IsNullOrEmpty(PlayerPrefs.GetString("TransferCode", ""));
+
+                if (!isGuest && cloudToken != m_LocalDeviceToken)
                 {
                     KickPlayerOut();
                     return;
@@ -206,13 +238,48 @@ public class UGSManager : MonoBehaviour
 
     private void KickPlayerOut()
     {
-        Debug.LogError("BỊ KICK: Tài khoản đã được đăng nhập ở máy khác!");
+        // Changed to LogWarning so it doesn't freeze the Unity Editor!
+        Debug.LogWarning("BỊ KICK: Tài khoản đã được đăng nhập ở máy khác!");
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ShowKickPopup();
+        }
+        else
+        {
+            ExecuteKickAndReload();
+        }
+    }
+
+    // === NEW: The actual execution of the kick, called by the GameManager OK button! ===
+    public void ExecuteKickAndReload()
+    {
+        if (UnityServices.State == Unity.Services.Core.ServicesInitializationState.Initialized)
+        {
+            if (AuthenticationService.Instance.IsSignedIn)
+            {
+                AuthenticationService.Instance.SignOut();
+            }
+            // Clear the old broken session!
+            AuthenticationService.Instance.ClearSessionToken();
+        }
+
+        // Wipe local memory and restart as a brand new Guest
         PlayerPrefs.DeleteAll();
         m_LocalDeviceToken = System.Guid.NewGuid().ToString();
         PlayerPrefs.SetString("DeviceToken", m_LocalDeviceToken);
         PlayerPrefs.Save();
+
+        // === THE FIX ===
+        // Destroy the immortal UGSManager so a fresh one spawns!
+        Instance = null;
+        Destroy(gameObject);
+        // ===============
+
+        // Reload the scene
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
+    // ===================================================================================
 
     public async void DeleteCloudSave()
     {
@@ -223,4 +290,78 @@ public class UGSManager : MonoBehaviour
         }
         catch (System.Exception) { }
     }
+
+    // === NEW: HEARTBEAT SYSTEM ===
+    private System.Collections.IEnumerator HeartbeatRoutine()
+    {
+        // Wait a few seconds before starting the loop so it doesn't clash with the initial startup load
+        yield return new WaitForSeconds(5f);
+
+        while (true)
+        {
+            // Pause the script for 15 seconds, then check the cloud!
+            yield return new WaitForSeconds(15f);
+
+            if (AuthenticationService.Instance.IsSignedIn)
+            {
+                CheckTokenSilently();
+            }
+        }
+    }
+
+    private async void CheckTokenSilently()
+    {
+        if (IsCloudSyncDisabled) return;
+        try
+        {
+            // We only download the DeviceToken to save bandwidth, not the whole save file!
+            var keys = new HashSet<string> { "DeviceToken" };
+            var savedData = await CloudSaveService.Instance.Data.Player.LoadAsync(keys);
+
+            if (savedData.TryGetValue("DeviceToken", out var cloudTokenItem))
+            {
+                string cloudToken = cloudTokenItem.Value.GetAsString();
+
+                // === NEW FIX: Don't kick Guests! ===
+                bool isGuest = string.IsNullOrEmpty(PlayerPrefs.GetString("TransferCode", ""));
+
+                // If they are not a guest, and the token changed... KICK!
+                if (!isGuest && !string.IsNullOrEmpty(cloudToken) && cloudToken != m_LocalDeviceToken)
+                {
+                    Debug.LogWarning("HEARTBEAT BÁO ĐỘNG: Phát hiện đăng nhập từ thiết bị khác!");
+                    KickPlayerOut();
+                }
+            }
+        }
+        catch (System.Exception)
+        {
+            // We leave this empty on purpose so the game doesn't crash if the internet flickers for a second!
+        }
+    }
+
+
+    // =============================
+
+    // === THE HYBRID SOLUTION ===
+    // This built-in Unity function fires automatically whenever 
+    // the player minimizes the game, switches tabs, or clicks back into the window!
+    // === THE HYBRID SOLUTION ===
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        // === NEW FIX: Do not check anything if Unity Services haven't finished loading yet! ===
+        if (UnityServices.State != Unity.Services.Core.ServicesInitializationState.Initialized)
+        {
+            return;
+        }
+        // =======================================================================================
+
+        // If the player just clicked back into the game window...
+        if (hasFocus && AuthenticationService.Instance.IsSignedIn)
+        {
+            Debug.Log("Player focused the window. Doing ONE quick security check...");
+            CheckTokenSilently();
+        }
+    }
+
+
 }
