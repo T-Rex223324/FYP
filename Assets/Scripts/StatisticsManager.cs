@@ -27,20 +27,33 @@ public class LifetimeStats
     public int MostMonstersKilledInOneRun;
     public int MostWallsBrokenInOneRun;
 
+    // --- FOOD ---
     public int TotalFoodEaten;
-    public int SmallFoodEaten;
+    public int FruitEaten;
     public int SodaDrank;
     public int BurgersEaten;
+    public int ChickenEaten;
+    public int FishEaten;
+    public int SaladEaten;
 
+    // --- WALLS ---
     public int TotalWallsBroken;
-    public int WallType1Broken;
+    public int NormalWallBroken;
     public int WallType2Broken;
+    public int WallType3Broken;
     public int CactusBroken;
+    public int CactusType2Broken;
+    public int CactusType3Broken;
     public int PinkRockBroken;
 
+    // --- ENEMIES ---
     public int TotalMonstersKilled;
-    public int NormalEnemiesKilled;
-    public int EliteEnemiesKilled;
+    public int ZombieKilled;
+    public int EliteZombieKilled;
+    public int FlyGH28Killed;
+    public int MummyKilled;
+    public int SlimeKilled;
+    public int MutantSlimeKilled;
 
     public int TotalHitsTaken;
 }
@@ -160,9 +173,13 @@ public class StatisticsManager : MonoBehaviour
         GameStats.Lifetime.TotalFoodEaten++;
         string lowerName = foodName.ToLower();
 
-        if (lowerName.Contains("soda") || lowerName.Contains("coca")) GameStats.Lifetime.SodaDrank++;
-        else if (lowerName.Contains("burger") || lowerName.Contains("big")) GameStats.Lifetime.BurgersEaten++;
-        else GameStats.Lifetime.SmallFoodEaten++;
+        // Unity adds "(Clone)" to prefabs, so we just check if the name CONTAINS the word
+        if (lowerName.Contains("soda")) GameStats.Lifetime.SodaDrank++;
+        else if (lowerName.Contains("burger")) GameStats.Lifetime.BurgersEaten++;
+        else if (lowerName.Contains("fruit")) GameStats.Lifetime.FruitEaten++;
+        else if (lowerName.Contains("chicken")) GameStats.Lifetime.ChickenEaten++;
+        else if (lowerName.Contains("fish")) GameStats.Lifetime.FishEaten++;
+        else if (lowerName.Contains("salad")) GameStats.Lifetime.SaladEaten++;
     }
 
     public void AddWallBroken(string wallName)
@@ -171,19 +188,28 @@ public class StatisticsManager : MonoBehaviour
         GameStats.Lifetime.TotalWallsBroken++;
         string lowerName = wallName.ToLower();
 
-        if (lowerName.Contains("cactus")) GameStats.Lifetime.CactusBroken++;
-        else if (lowerName.Contains("pink")) GameStats.Lifetime.PinkRockBroken++;
-        else if (lowerName.Contains("type02")) GameStats.Lifetime.WallType2Broken++;
-        else GameStats.Lifetime.WallType1Broken++;
+        // Check the specific versions first!
+        if (lowerName.Contains("pink")) GameStats.Lifetime.PinkRockBroken++;
+        else if (lowerName.Contains("cactustype3")) GameStats.Lifetime.CactusType3Broken++;
+        else if (lowerName.Contains("cactustype2")) GameStats.Lifetime.CactusType2Broken++;
+        else if (lowerName.Contains("cactus")) GameStats.Lifetime.CactusBroken++;
+        else if (lowerName.Contains("walltype3")) GameStats.Lifetime.WallType3Broken++;
+        else if (lowerName.Contains("walltype2")) GameStats.Lifetime.WallType2Broken++;
+        else GameStats.Lifetime.NormalWallBroken++; // Default dirt wall
     }
 
-    public void AddMonsterKilled(bool isElite)
+    public void AddMonsterKilled(string monsterName)
     {
         if (CurrentRun != null) CurrentRun.MonstersKilled++;
         GameStats.Lifetime.TotalMonstersKilled++;
+        string lowerName = monsterName.ToLower();
 
-        if (isElite) GameStats.Lifetime.EliteEnemiesKilled++;
-        else GameStats.Lifetime.NormalEnemiesKilled++;
+        if (lowerName.Contains("elite")) GameStats.Lifetime.EliteZombieKilled++;
+        else if (lowerName.Contains("fly")) GameStats.Lifetime.FlyGH28Killed++;
+        else if (lowerName.Contains("mummy")) GameStats.Lifetime.MummyKilled++;
+        else if (lowerName.Contains("mutant")) GameStats.Lifetime.MutantSlimeKilled++;
+        else if (lowerName.Contains("slime")) GameStats.Lifetime.SlimeKilled++;
+        else GameStats.Lifetime.ZombieKilled++; // Default normal zombie
     }
 
     public void UpdateHighestFood(int currentFood)

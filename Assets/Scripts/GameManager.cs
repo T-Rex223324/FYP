@@ -28,8 +28,8 @@ public class GameManager : MonoBehaviour
     private TextField m_InputCodeField;
     private Button m_LoginCodeButton;
     private VisualElement m_KickPopupPanel;
-    private Label m_KickTitleLabel; // <--- New Title Reference
-    private Label m_KickMessageLabel; // <--- New Message Reference
+    private Label m_KickTitleLabel;
+    private Label m_KickMessageLabel;
     private Button m_KickOkButton;
     // ===================================
 
@@ -186,17 +186,58 @@ public class GameManager : MonoBehaviour
     {
         if (Keyboard.current == null) return;
 
+        // === 1. PAUSE MENU LOGIC (ESCAPE KEY) ===
+        // FIX: We added a check to ensure the Statistic Panel is closed!
         if (Keyboard.current.escapeKey.wasPressedThisFrame &&
             m_MainMenuPanel.style.visibility == Visibility.Hidden &&
             m_GameOverPanel.style.visibility == Visibility.Hidden &&
-            m_CharacterSelectionPanel.style.visibility == Visibility.Hidden)
+            m_CharacterSelectionPanel.style.visibility == Visibility.Hidden &&
+            (m_StatisticPanel == null || m_StatisticPanel.style.display == DisplayStyle.None))
         {
+            // NOTE: If you add a Leaderboard panel variable later, you can block it by adding this line right above:
+            // && (m_LeaderboardPanel == null || m_LeaderboardPanel.style.display == DisplayStyle.None)
+
             if (IsPaused) ResumeGame();
             else PauseGame();
         }
 
-        if (Keyboard.current.tabKey.wasPressedThisFrame && PlayerController != null) NewLevel();
+        // === 2. NEXT LEVEL LOGIC (TAB KEY) ===
+        if (Keyboard.current.tabKey.wasPressedThisFrame &&
+            PlayerController != null &&
+            m_GameOverPanel.style.visibility == Visibility.Hidden)
+        {
+            NewLevel();
+        }
+
+        // === 3. RETURN TO MENU FROM GAME OVER (ENTER KEY) ===
+        if (Keyboard.current.enterKey.wasPressedThisFrame &&
+            m_GameOverPanel.style.visibility == Visibility.Visible)
+        {
+            CloseGameOverAndReturnToMenu();
+        }
     }
+
+    // === NEW METHOD: Safely return to the menu without saving a dead/finished game ===
+    private void CloseGameOverAndReturnToMenu()
+    {
+        // Hide the Game Over screen and gameplay UI
+        m_GameOverPanel.style.visibility = Visibility.Hidden;
+        m_FoodLabel.style.visibility = Visibility.Hidden;
+        m_DayLabel.style.visibility = Visibility.Hidden;
+
+        // Show the Main Menu
+        m_MainMenuPanel.style.visibility = Visibility.Visible;
+
+        // Make sure the Continue button is hidden since the save was cleared
+        if (m_ContinueButton != null) m_ContinueButton.style.display = DisplayStyle.None;
+
+        if (SoundManager.Instance != null) SoundManager.Instance.StopMusic();
+
+        // Clean up the board and destroy the old character
+        BoardManager.Clean();
+        if (PlayerController != null) Destroy(PlayerController.gameObject);
+    }
+    // ==============================================================================
 
     private void PauseGame()
     {
@@ -427,26 +468,28 @@ public class GameManager : MonoBehaviour
         // ==============================
 
         // Using Rich Text to add colors and bolding!
+        // Using Rich Text to add colors and bolding!
         m_StatsText.text =
             $"<color=#FACC15><b>--- PERSONAL BESTS (Single Run) ---</b></color>\n" +
             $"Greatest Attempt: <color=#FFFFFF>{bestRunText}</color>\n" +
             $"Longest Survival: <color=#FFFFFF>Day {lifetime.HighestDaySurvived}</color>\n" +
-            $"Highest Food Held: <color=#FFFFFF>{lifetime.HighestFoodHeld}</color>\n" +
-            $"Most Monsters Defeated: <color=#FFFFFF>{lifetime.MostMonstersKilledInOneRun}</color>\n" +
-            $"Most Walls Mined: <color=#FFFFFF>{lifetime.MostWallsBrokenInOneRun}</color>\n\n" +
+            $"Highest Food: <color=#FFFFFF>{lifetime.HighestFoodHeld}</color> | Most Kills: <color=#FFFFFF>{lifetime.MostMonstersKilledInOneRun}</color> | Most Mined: <color=#FFFFFF>{lifetime.MostWallsBrokenInOneRun}</color>\n\n" +
 
             $"<color=#38BDF8><b>--- LIFETIME TOTALS ---</b></color>\n" +
-            $"Total Runs: <color=#FFFFFF>{lifetime.TotalRuns}</color>  |  Wins: <color=#FFFFFF>{lifetime.TotalWins}</color>\n" +
-            $"Total Steps Walked: <color=#FFFFFF>{lifetime.TotalSteps}</color>\n\n" +
+            $"Total Runs: <color=#FFFFFF>{lifetime.TotalRuns}</color> | Wins: <color=#FFFFFF>{lifetime.TotalWins}</color> | Steps: <color=#FFFFFF>{lifetime.TotalSteps}</color>\n\n" +
 
-            $"<color=#4ADE80><b>--- FOOD CONSUMED ---</b></color>\n" +
-            $"Total: <color=#FFFFFF>{lifetime.TotalFoodEaten}</color> (Small: {lifetime.SmallFoodEaten}, Soda: {lifetime.SodaDrank}, Burger: {lifetime.BurgersEaten})\n\n" +
+            $"<color=#4ADE80><b>--- FOOD CONSUMED (Total: {lifetime.TotalFoodEaten}) ---</b></color>\n" +
+            $"Fruit: {lifetime.FruitEaten} | Soda: {lifetime.SodaDrank} | Burger: {lifetime.BurgersEaten}\n" +
+            $"Chicken: {lifetime.ChickenEaten} | Fish: {lifetime.FishEaten} | Salad: {lifetime.SaladEaten}\n\n" +
 
-            $"<color=#A78BFA><b>--- WALLS DESTROYED ---</b></color>\n" +
-            $"Total: <color=#FFFFFF>{lifetime.TotalWallsBroken}</color> (Normal: {lifetime.WallType1Broken}, Type 2: {lifetime.WallType2Broken}, Cactus: {lifetime.CactusBroken}, Pink Rock: {lifetime.PinkRockBroken})\n\n" +
+            $"<color=#A78BFA><b>--- WALLS DESTROYED (Total: {lifetime.TotalWallsBroken}) ---</b></color>\n" +
+            $"Dirt: {lifetime.NormalWallBroken} | Dirt V2: {lifetime.WallType2Broken} | Dirt V3: {lifetime.WallType3Broken}\n" +
+            $"Cactus: {lifetime.CactusBroken} | Cactus V2: {lifetime.CactusType2Broken} | Cactus V3: {lifetime.CactusType3Broken}\n" +
+            $"Pink Rock: {lifetime.PinkRockBroken}\n\n" +
 
-            $"<color=#F87171><b>--- MONSTERS DEFEATED ---</b></color>\n" +
-            $"Total: <color=#FFFFFF>{lifetime.TotalMonstersKilled}</color> (Normal: {lifetime.NormalEnemiesKilled}, Elite: {lifetime.EliteEnemiesKilled})\n\n" +
+            $"<color=#F87171><b>--- MONSTERS DEFEATED (Total: {lifetime.TotalMonstersKilled}) ---</b></color>\n" +
+            $"Zombie: {lifetime.ZombieKilled} | Elite: {lifetime.EliteZombieKilled} | Mummy: {lifetime.MummyKilled}\n" +
+            $"Fly-GH28: {lifetime.FlyGH28Killed} | Slime: {lifetime.SlimeKilled} | Mutant: {lifetime.MutantSlimeKilled}\n\n" +
 
             $"Damage Taken: <color=#FF8A65>{lifetime.TotalHitsTaken}</color>";
 

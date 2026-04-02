@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Services.Authentication;
 using Unity.Services.CloudSave;
 using Unity.Services.Core;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,6 +13,7 @@ public class UGSManager : MonoBehaviour
 {
 
     public bool IsCloudSyncDisabled = false;
+    private float m_LastFocusCheckTime = 0f;
 
     public static UGSManager Instance { get; private set; }
 
@@ -67,31 +71,34 @@ public class UGSManager : MonoBehaviour
 
     public async Task<string> GenerateTransferCode()
     {
-        // === NEW FIX: Check if we ALREADY have a code before asking the server! ===
-        string existingCode = PlayerPrefs.GetString("TransferCode", "");
-        if (!string.IsNullOrEmpty(existingCode))
-        {
-            //Debug.Log("You already have a code! Showing existing code: " + existingCode);
-            return existingCode;
-        }
-        // ==========================================================================
-
-        string randomCode = "30DAYS-" + Random.Range(1000, 9999) + "-" + Random.Range(1000, 9999);
-
         try
         {
-            await AuthenticationService.Instance.AddUsernamePasswordAsync(randomCode, SECRET_PASSWORD);
+            // 1. Kiểm tra xem tài khoản này đã từng tạo mã chưa
+            string secureCode = PlayerPrefs.GetString("TransferCode", "");
 
-            PlayerPrefs.SetString("TransferCode", randomCode);
-            PlayerPrefs.Save();
+            if (string.IsNullOrEmpty(secureCode))
+            {
+                // Lần đầu tiên tạo mã: Gắn mã OTP vĩnh viễn vào tài khoản
+                secureCode = GenerateSecureOTP();
+                await AuthenticationService.Instance.AddUsernamePasswordAsync(secureCode, SECRET_PASSWORD);
 
-            Debug.Log("Tạo mã thành công: " + randomCode);
-            return randomCode;
+                PlayerPrefs.SetString("TransferCode", secureCode);
+                PlayerPrefs.Save();
+            }
+
+            // 2. BẬT MÃ (Khởi động bộ đếm 5 phút)
+            // Dù là mã mới hay mã cũ, ta đều gia hạn nó thêm 5 phút trên Cloud!
+            DateTime expiryTime = DateTime.UtcNow.AddMinutes(5);
+            var data = new Dictionary<string, object> { { "OTP_Expiry", expiryTime.ToString("o") } };
+            await CloudSaveService.Instance.Data.Player.SaveAsync(data);
+
+            Debug.Log($"Tạo/Gia hạn mã thành công: {secureCode}. Hết hạn lúc: {expiryTime.ToLocalTime()}");
+            return secureCode;
         }
         catch (AuthenticationException ex)
         {
-            Debug.LogWarning("Tài khoản này đã có mã rồi: " + ex.Message);
-            return PlayerPrefs.GetString("TransferCode", "LỖI");
+            Debug.LogError("Lỗi tạo mã: " + ex.Message);
+            return "LỖI";
         }
     }
 
@@ -99,33 +106,59 @@ public class UGSManager : MonoBehaviour
     {
         try
         {
-            // === NEW: Tell the UI to show a loading message! ===
             if (GameManager.Instance != null)
             {
-                // We borrow the Code Display label to show the loading status!
                 var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
                 if (displayLabel != null) displayLabel.text = "Syncing Cloud Data... Please Wait...";
             }
-            // ===================================================
 
-            if (AuthenticationService.Instance.IsSignedIn)
-            {
-                AuthenticationService.Instance.SignOut();
-            }
+            if (AuthenticationService.Instance.IsSignedIn) AuthenticationService.Instance.SignOut();
 
+            // 1. Thử đăng nhập bằng mã
             await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(codeToUse, SECRET_PASSWORD);
 
+            // 2. KIỂM TRA ĐỒNG HỒ 5 PHÚT TRÊN CLOUD
+            var keys = new HashSet<string> { "OTP_Expiry" };
+            var savedData = await CloudSaveService.Instance.Data.Player.LoadAsync(keys);
+
+            if (savedData.TryGetValue("OTP_Expiry", out var expiryItem))
+            {
+                DateTime expiryTime = DateTime.Parse(expiryItem.Value.GetAsString());
+
+                if (DateTime.UtcNow > expiryTime)
+                {
+                    Debug.LogError("Mã đã hết hạn (quá 5 phút)!");
+                    if (GameManager.Instance != null)
+                    {
+                        var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
+                        if (displayLabel != null) displayLabel.text = "Error: Code Expired!";
+                    }
+                    AuthenticationService.Instance.SignOut(); // Đá văng ra ngoài
+                    return;
+                }
+            }
+            else
+            {
+                // Nếu hacker mò ra mã nhưng mã chưa được kích hoạt hẹn giờ -> Chặn luôn!
+                Debug.LogError("Mã này đang bị đóng băng!");
+                AuthenticationService.Instance.SignOut();
+                return;
+            }
+
+            // 3. MÃ HỢP LỆ! Lưu lại mã vào máy mới và tải Save
+            Debug.Log("Mã hợp lệ! Đang tải dữ liệu...");
             PlayerPrefs.SetString("TransferCode", codeToUse);
             PlayerPrefs.Save();
 
-            Debug.Log("Nhập mã thành công! Đang tải dữ liệu...");
             await SyncCloudToLocal(forceOverwriteCloudToken: true);
+
+            // 4. BURN AFTER READING (Đốt mã ngay lập tức)
+            await BurnCode();
+            Debug.Log("Chuyển máy thành công. Mã đã bị vô hiệu hóa.");
         }
         catch (System.Exception e)
         {
             Debug.LogError("Mã không hợp lệ: " + e.Message);
-
-            // Reset the text if it fails
             if (GameManager.Instance != null)
             {
                 var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
@@ -133,6 +166,8 @@ public class UGSManager : MonoBehaviour
             }
         }
     }
+
+    
 
     private async Task CheckAndSyncCloudToLocal()
     {
@@ -358,9 +393,45 @@ public class UGSManager : MonoBehaviour
         // If the player just clicked back into the game window...
         if (hasFocus && AuthenticationService.Instance.IsSignedIn)
         {
-            Debug.Log("Player focused the window. Doing ONE quick security check...");
-            CheckTokenSilently();
+            // === ANTI-SPAM COOLDOWN (FIXES THE 401 CORS ERROR) ===
+            // We only allow this security check to run if 2 seconds have passed since the last check.
+            // This prevents WebGL from firing 8 API requests at the exact same time!
+            if (Time.time - m_LastFocusCheckTime > 2f)
+            {
+                m_LastFocusCheckTime = Time.time;
+                Debug.Log("Player focused the window. Doing ONE quick security check...");
+                CheckTokenSilently();
+            }
         }
+    }
+
+    // === BẢO MẬT: THUẬT TOÁN SINH SỐ NGẪU NHIÊN CHUẨN MÃ HÓA (CSPRNG) ===
+    private string GenerateSecureOTP()
+    {
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        StringBuilder result = new StringBuilder("30D-");
+
+        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+        {
+            byte[] data = new byte[8];
+            rng.GetBytes(data);
+
+            for (int i = 0; i < 4; i++) result.Append(chars[data[i] % chars.Length]);
+            result.Append("-");
+            for (int i = 4; i < 8; i++) result.Append(chars[data[i] % chars.Length]);
+        }
+
+        return result.ToString();
+    }
+
+    private async Task BurnCode()
+    {
+        // Đốt mã bằng cách đẩy thời gian hết hạn lùi về 1 ngày trước
+        // Bất cứ ai đăng nhập sau giây phút này đều sẽ bị văng ra vì thời gian báo "Đã quá hạn"
+        DateTime expiredTime = DateTime.UtcNow.AddDays(-1);
+        var data = new Dictionary<string, object> { { "OTP_Expiry", expiredTime.ToString("o") } };
+
+        await CloudSaveService.Instance.Data.Player.SaveAsync(data);
     }
 
 

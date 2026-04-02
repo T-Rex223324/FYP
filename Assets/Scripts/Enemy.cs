@@ -59,11 +59,14 @@ public class Enemy : CellObject
     {
         m_CurrentHealth -= 1;
 
-        // Optional: You could trigger an enemy "Hit" animation here if you make one!
-
         if (m_CurrentHealth <= 0)
         {
-            if (StatisticsManager.Instance != null) StatisticsManager.Instance.AddMonsterKilled(gameObject.name.Contains("Elite"));
+            // === CHANGED: Send the exact name of the enemy prefab! ===
+            if (StatisticsManager.Instance != null)
+            {
+                StatisticsManager.Instance.AddMonsterKilled(gameObject.name);
+            }
+            // =========================================================
             Destroy(gameObject);
         }
         return false;
