@@ -33,6 +33,14 @@ public class GameManager : MonoBehaviour
     private Button m_KickOkButton;
     // ===================================
 
+
+    // === Leaderboard UI ===
+    private VisualElement m_LeaderboardPanel;
+    private Label m_LeaderboardText;
+    private Button m_OpenLeaderboardButton;
+    private Button m_CloseLeaderboardButton;
+    private Button m_ReloadLeaderboardButton;
+
     public UIDocument UIDoc;
     public TurnManager TurnManager { get; private set; }
 
@@ -63,6 +71,11 @@ public class GameManager : MonoBehaviour
     private Button m_Char3Button;
     private Button m_BackButton;
 
+    private Button m_ExitButton;
+    private VisualElement m_ExitConfirmPanel;
+    private Button m_ConfirmExitYesButton;
+    private Button m_ConfirmExitNoButton;
+
     private int m_CurrentLevel = 1;
 
     private void Awake()
@@ -85,6 +98,32 @@ public class GameManager : MonoBehaviour
         m_PlayButton = m_MainMenuPanel.Q<Button>("PlayButton");
 
         m_ContinueButton = m_MainMenuPanel.Q<Button>("ContinueButton");
+        m_ExitButton = m_MainMenuPanel?.Q<Button>("ExitButton");
+        //if (m_ExitButton != null) m_ExitButton.clicked += ExitGame;
+        m_ExitConfirmPanel = UIDoc.rootVisualElement.Q<VisualElement>("ExitConfirmPanel");
+        m_ConfirmExitYesButton = m_ExitConfirmPanel?.Q<Button>("ConfirmExitYesButton");
+        m_ConfirmExitNoButton = m_ExitConfirmPanel?.Q<Button>("ConfirmExitNoButton");
+
+        if (m_ExitButton != null) m_ExitButton.clicked += ShowExitConfirmation;
+        if (m_ConfirmExitYesButton != null) m_ConfirmExitYesButton.clicked += ExecuteExit;
+        if (m_ConfirmExitNoButton != null) m_ConfirmExitNoButton.clicked += CancelExit;
+
+        if (m_ExitConfirmPanel != null) m_ExitConfirmPanel.style.display = DisplayStyle.None;
+
+
+        // Put this somewhere inside Start()!
+        m_LeaderboardPanel = UIDoc.rootVisualElement.Q<VisualElement>("LeaderboardPanel");
+        m_LeaderboardText = m_LeaderboardPanel?.Q<Label>("LeaderboardText");
+
+        m_OpenLeaderboardButton = UIDoc.rootVisualElement.Q<Button>("LeaderboardButton");
+        m_CloseLeaderboardButton = m_LeaderboardPanel?.Q<Button>("CloseLeaderboardButton");
+        m_ReloadLeaderboardButton = m_LeaderboardPanel?.Q<Button>("ReloadLeaderboardButton");
+
+        if (m_OpenLeaderboardButton != null) m_OpenLeaderboardButton.clicked += OpenLeaderboard;
+        if (m_CloseLeaderboardButton != null) m_CloseLeaderboardButton.clicked += CloseLeaderboard;
+        if (m_ReloadLeaderboardButton != null) m_ReloadLeaderboardButton.clicked += ReloadLeaderboard;
+
+        if (m_LeaderboardPanel != null) m_LeaderboardPanel.style.display = DisplayStyle.None;
 
         // === NEW: Link the Kick Popup ===
         m_KickPopupPanel = UIDoc.rootVisualElement.Q<VisualElement>("KickPopupPanel");
@@ -184,36 +223,29 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current == null) return;
-
-        // === 1. PAUSE MENU LOGIC (ESCAPE KEY) ===
-        // FIX: We added a check to ensure the Statistic Panel is closed!
-        if (Keyboard.current.escapeKey.wasPressedThisFrame &&
-            m_MainMenuPanel.style.visibility == Visibility.Hidden &&
-            m_GameOverPanel.style.visibility == Visibility.Hidden &&
-            m_CharacterSelectionPanel.style.visibility == Visibility.Hidden &&
-            (m_StatisticPanel == null || m_StatisticPanel.style.display == DisplayStyle.None))
+        // === 1. ESCAPE KEY LOGIC (EXIT APP OR PAUSE GAME) ===
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            // NOTE: If you add a Leaderboard panel variable later, you can block it by adding this line right above:
-            // && (m_LeaderboardPanel == null || m_LeaderboardPanel.style.display == DisplayStyle.None)
-
-            if (IsPaused) ResumeGame();
-            else PauseGame();
-        }
-
-        // === 2. NEXT LEVEL LOGIC (TAB KEY) ===
-        if (Keyboard.current.tabKey.wasPressedThisFrame &&
-            PlayerController != null &&
-            m_GameOverPanel.style.visibility == Visibility.Hidden)
-        {
-            NewLevel();
-        }
-
-        // === 3. RETURN TO MENU FROM GAME OVER (ENTER KEY) ===
-        if (Keyboard.current.enterKey.wasPressedThisFrame &&
-            m_GameOverPanel.style.visibility == Visibility.Visible)
-        {
-            CloseGameOverAndReturnToMenu();
+            // SCENARIO A: We are in the Main Menu
+            if (m_MainMenuPanel != null && m_MainMenuPanel.style.visibility == Visibility.Visible)
+            {
+                // Toggle the Exit Confirmation popup!
+                if (m_ExitConfirmPanel != null)
+                {
+                    if (m_ExitConfirmPanel.style.display == DisplayStyle.None) ShowExitConfirmation();
+                    else CancelExit();
+                }
+            }
+            // SCENARIO B: We are actually playing the game (Pause Logic)
+            else if (m_MainMenuPanel.style.visibility == Visibility.Hidden &&
+                     m_GameOverPanel.style.visibility == Visibility.Hidden &&
+                     m_CharacterSelectionPanel.style.visibility == Visibility.Hidden &&
+                     (m_StatisticPanel == null || m_StatisticPanel.style.display == DisplayStyle.None) &&
+                     (m_LeaderboardPanel == null || m_LeaderboardPanel.style.display == DisplayStyle.None))
+            {
+                if (IsPaused) ResumeGame();
+                else PauseGame();
+            }
         }
     }
 
@@ -367,17 +399,20 @@ public class GameManager : MonoBehaviour
         m_CurrentLevel++;
         if (m_DayLabel != null) m_DayLabel.text = "Day : " + m_CurrentLevel;
 
+        // 1. Keep your trigger at Day 31!
         if (m_CurrentLevel == 31)
         {
             if (StatisticsManager.Instance != null)
             {
                 StatisticsManager.Instance.AddWin();
-                StatisticsManager.Instance.EndRun(m_CurrentLevel);
+
+                // 2. THE FIX: Force it to save exactly 30 days to the database!
+                StatisticsManager.Instance.EndRun(30);
             }
 
             if (PlayerController != null) PlayerController.GameOver();
             m_GameOverPanel.style.visibility = Visibility.Visible;
-            m_GameOverMessage.text = "You is the winner. Thank you for play my video game";
+            m_GameOverMessage.text = "You are the winner. Thank you for play my video game";
             ClearSaveData();
             return;
         }
@@ -617,6 +652,55 @@ public class GameManager : MonoBehaviour
     }
     // =============================
 
+    private async void OpenLeaderboard()
+    {
+        m_MainMenuPanel.style.visibility = Visibility.Hidden;
+        m_LeaderboardPanel.style.display = DisplayStyle.Flex;
 
+        if (m_LeaderboardText != null) m_LeaderboardText.text = "Loading top scores from Cloud...";
 
+        if (UGSManager.Instance != null)
+        {
+            string data = await UGSManager.Instance.FetchLeaderboardData();
+            if (m_LeaderboardText != null) m_LeaderboardText.text = data;
+        }
+    }
+
+    private async void ReloadLeaderboard()
+    {
+        if (m_LeaderboardText != null) m_LeaderboardText.text = "Refreshing...";
+
+        if (UGSManager.Instance != null)
+        {
+            string data = await UGSManager.Instance.FetchLeaderboardData();
+            if (m_LeaderboardText != null) m_LeaderboardText.text = data;
+        }
+    }
+
+    private void CloseLeaderboard()
+    {
+        m_LeaderboardPanel.style.display = DisplayStyle.None;
+        m_MainMenuPanel.style.visibility = Visibility.Visible;
+    }
+
+    // === EXIT GAME SYSTEM ===
+    private void ShowExitConfirmation()
+    {
+        if (m_ExitConfirmPanel != null) m_ExitConfirmPanel.style.display = DisplayStyle.Flex;
+    }
+
+    private void CancelExit()
+    {
+        if (m_ExitConfirmPanel != null) m_ExitConfirmPanel.style.display = DisplayStyle.None;
+    }
+
+    private void ExecuteExit()
+    {
+        Debug.Log("Exiting Game...");
+        Application.Quit();
+
+    #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+    #endif
+    }
 }

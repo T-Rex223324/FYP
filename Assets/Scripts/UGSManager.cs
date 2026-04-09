@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Unity.Services.Leaderboards;
 
 public class UGSManager : MonoBehaviour
 {
@@ -434,5 +435,82 @@ public class UGSManager : MonoBehaviour
         await CloudSaveService.Instance.Data.Player.SaveAsync(data);
     }
 
+    // === LEADERBOARD SYSTEM ===
+
+    // 1. Create a tiny class to hold the text so Unity can convert it to JSON!
+    [System.Serializable]
+    private class ScoreMetadata
+    {
+        public string details;
+    }
+
+    public async void SubmitDailyScore(int score, string metadata)
+    {
+        if (IsCloudSyncDisabled || !AuthenticationService.Instance.IsSignedIn) return;
+
+        try
+        {
+            // 2. Convert the plain text string into a proper JSON object
+            var options = new AddPlayerScoreOptions
+            {
+                Metadata = new ScoreMetadata { details = metadata }
+            };
+
+            await LeaderboardsService.Instance.AddPlayerScoreAsync("DailyLeaderboard", score, options);
+            Debug.Log("Đã gửi điểm và Metadata lên Bảng xếp hạng Daily: " + score);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Lỗi gửi điểm Leaderboard: " + e.Message);
+        }
+    }
+
+    public async Task<string> FetchLeaderboardData()
+    {
+        try
+        {
+            var scoresResponse = await LeaderboardsService.Instance.GetScoresAsync("DailyLeaderboard", new GetScoresOptions { Limit = 10, IncludeMetadata = true });
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("<color=#FACC15><b>--- TOP 10 DAILY SURVIVORS ---</b></color>\n");
+
+            if (scoresResponse.Results.Count == 0)
+            {
+                sb.AppendLine("No one has played today! Be the first!");
+                return sb.ToString();
+            }
+
+            foreach (var entry in scoresResponse.Results)
+            {
+                string playerName = string.IsNullOrEmpty(entry.PlayerName) ? "Anonymous" : entry.PlayerName;
+
+                string metadataText = "No details recorded.";
+
+                // 4. Safely unwrap the JSON object back into plain text when downloading!
+                if (!string.IsNullOrEmpty(entry.Metadata))
+                {
+                    try
+                    {
+                        var parsedData = JsonUtility.FromJson<ScoreMetadata>(entry.Metadata);
+                        if (parsedData != null && !string.IsNullOrEmpty(parsedData.details))
+                        {
+                            metadataText = parsedData.details;
+                        }
+                    }
+                    catch { /* Ignore errors if an old score doesn't have proper JSON */ }
+                }
+
+                sb.AppendLine($"#{entry.Rank + 1}: <color=#FFFFFF><b>{playerName}</b></color> - <color=#4ADE80>{entry.Score} Pts</color>");
+                sb.AppendLine($"<size=18><color=#D1D5DB>{metadataText}</color></size>\n");
+            }
+
+            return sb.ToString();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Lỗi tải Bảng xếp hạng: " + e.Message);
+            return "Could not connect to Leaderboard. Please try again.";
+        }
+    }
 
 }

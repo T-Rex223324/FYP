@@ -865,7 +865,7 @@ MonoBehaviour:
   - {fileID: 266681667125597957, guid: 9e064de385bf642448b6e3998bf22107, type: 3}
   FloatingTextPrefab: {fileID: 2055663993954504164, guid: cc77ba6a3c082454aa383023fac202fd, type: 3}
   UIDoc: {fileID: 768006880}
-  DevStartDay: 1
+  DevStartDay: 30
   SelectedCharacter: 3
 --- !u!4 &2073671461
 Transform:

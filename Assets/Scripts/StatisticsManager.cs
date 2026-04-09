@@ -107,31 +107,39 @@ public class StatisticsManager : MonoBehaviour
             GameStats.Lifetime.MostWallsBrokenInOneRun = CurrentRun.WallsBroken;
 
         // === NEW: ONLY RECORD THE BEST RUN IF IT IS A WIN (DAY 31) ===
-        if (finalDay >= 31)
+        if (finalDay >= 30)
         {
             bool isNewBest = false;
 
-            // If they have never won before, this is automatically the best run!
+            // 1. Calculate the score
+            int currentScore = CurrentRun.MonstersKilled + CurrentRun.WallsBroken + CurrentRun.StepsTaken + CurrentRun.DaysSurvived;
+
+            // 2. Generate the detailed text string for the Leaderboard Metadata!
+            string runDetails = $"The {CurrentRun.RunNumber} try: {CurrentRun.CharacterName} - Day {CurrentRun.DaysSurvived} | {CurrentRun.StepsTaken} Moves | {CurrentRun.TurnsTaken} Turns | {CurrentRun.MonstersKilled} Kills | {CurrentRun.WallsBroken} Walls";
+
+            // 3. ALWAYS push the winning score AND the detailed text to the Leaderboard!
+            if (UGSManager.Instance != null)
+            {
+                UGSManager.Instance.SubmitDailyScore(currentScore, runDetails);
+            }
+
+            // 4. Check if this is their first win ever
             if (GameStats.Lifetime.BestRun == null || GameStats.Lifetime.BestRun.DaysSurvived == 0)
             {
                 isNewBest = true;
             }
             else
             {
-                // If they ALREADY have a winning run, compare them! 
-                // (We now calculate the score using all 4 tracked run statistics!)
-                int currentScore = CurrentRun.MonstersKilled + CurrentRun.WallsBroken + CurrentRun.StepsTaken + CurrentRun.DaysSurvived;
-
+                // 5. Compare with their old local best
                 int oldBestScore = GameStats.Lifetime.BestRun.MonstersKilled + GameStats.Lifetime.BestRun.WallsBroken + GameStats.Lifetime.BestRun.StepsTaken + GameStats.Lifetime.BestRun.DaysSurvived;
 
                 if (currentScore > oldBestScore)
                 {
-                    isNewBest = true; // The new run scored higher overall!
+                    isNewBest = true;
                 }
             }
 
-            // If the new run won the comparison, overwrite the old Best Run!
-            // If the new run won the comparison, overwrite the old Best Run!
+            // 6. If it's a new best, save it locally to their profile
             if (isNewBest)
             {
                 GameStats.Lifetime.BestRun = new RunStats
@@ -140,12 +148,13 @@ public class StatisticsManager : MonoBehaviour
                     CharacterName = CurrentRun.CharacterName,
                     DaysSurvived = CurrentRun.DaysSurvived,
                     StepsTaken = CurrentRun.StepsTaken,
-                    TurnsTaken = CurrentRun.TurnsTaken, // <--- Add this line!
+                    TurnsTaken = CurrentRun.TurnsTaken,
                     WallsBroken = CurrentRun.WallsBroken,
                     MonstersKilled = CurrentRun.MonstersKilled
                 };
             }
         }
+        // =============================================================
         // =============================================================
 
         // WE DELETED THE "PastRuns.Add(CurrentRun)" LINE SO IT STOPS SAVING 1000 RUNS!
