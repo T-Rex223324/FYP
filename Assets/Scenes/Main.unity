@@ -415,6 +415,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &352678000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 352678002}
+  - component: {fileID: 352678001}
+  m_Layer: 0
+  m_Name: GlobalErrorHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &352678001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 352678000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c41a17b93d33a148afd02b1c86bde9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GlobalErrorHandler
+  DiscordWebhookURL: https://discord.com/api/webhooks/1492760415741149235/OZzJImS8a57WhP8ESHrTsuNgg4N10Kq7uGn6j-YdjzU9iwl6s-95TqZ-2cRo_xPi23MG
+--- !u!4 &352678002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 352678000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.07555, y: -0.4062, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &607935305
 GameObject:
   m_ObjectHideFlags: 0
@@ -922,7 +967,7 @@ MonoBehaviour:
   - {fileID: 266681667125597957, guid: 9e064de385bf642448b6e3998bf22107, type: 3}
   FloatingTextPrefab: {fileID: 2055663993954504164, guid: cc77ba6a3c082454aa383023fac202fd, type: 3}
   UIDoc: {fileID: 768006880}
-  DevStartDay: 11
+  DevStartDay: 1
   SelectedCharacter: 3
 --- !u!4 &2073671461
 Transform:
@@ -1078,3 +1123,4 @@ SceneRoots:
   - {fileID: 269811521}
   - {fileID: 2043207503}
   - {fileID: 1264158110}
+  - {fileID: 352678002}
