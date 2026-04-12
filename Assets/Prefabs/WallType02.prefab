@@ -104,6 +104,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e9404e078d49b4e843f2cab76ee8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Type: 0
+  PrefabIndex: 0
   ObstacleTile: {fileID: 11400000, guid: dc5d25289e011304d82b53831e9dbdee, type: 2}
   DamagedTile: {fileID: 11400000, guid: d3e7d50f2d211194995f939ff00bf79d, type: 2}
   MaxHealth: 5
+  BreakParticlePrefab: {fileID: 5578967402716733044, guid: 2c45ac87c478df84f922884db2645a11, type: 3}

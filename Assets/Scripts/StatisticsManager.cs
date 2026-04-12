@@ -1,4 +1,4 @@
-    using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 [System.Serializable]
@@ -27,7 +27,6 @@ public class LifetimeStats
     public int MostMonstersKilledInOneRun;
     public int MostWallsBrokenInOneRun;
 
-    // --- FOOD ---
     public int TotalFoodEaten;
     public int FruitEaten;
     public int SodaDrank;
@@ -36,7 +35,6 @@ public class LifetimeStats
     public int FishEaten;
     public int SaladEaten;
 
-    // --- WALLS ---
     public int TotalWallsBroken;
     public int NormalWallBroken;
     public int WallType2Broken;
@@ -46,7 +44,6 @@ public class LifetimeStats
     public int CactusType3Broken;
     public int PinkRockBroken;
 
-    // --- ENEMIES ---
     public int TotalMonstersKilled;
     public int ZombieKilled;
     public int EliteZombieKilled;
@@ -80,6 +77,28 @@ public class StatisticsManager : MonoBehaviour
         LoadStats();
     }
 
+    // === STEP 2: EVENT DRIVEN ARCHITECTURE ===
+    // Listen to the Radio Tower when the object is active!
+    private void OnEnable()
+    {
+        GameEvents.OnFoodEaten += HandleFoodEaten;
+        GameEvents.OnEnemyKilled += AddMonsterKilled;
+        GameEvents.OnWallBroken += AddWallBroken;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnFoodEaten -= HandleFoodEaten;
+        GameEvents.OnEnemyKilled -= AddMonsterKilled;
+        GameEvents.OnWallBroken -= AddWallBroken;
+    }
+
+    private void HandleFoodEaten(int amount, string foodName)
+    {
+        AddFoodEaten(foodName);
+    }
+    // =========================================
+
     public void StartNewRun(int characterIndex)
     {
         CurrentRun = new RunStats();
@@ -95,51 +114,25 @@ public class StatisticsManager : MonoBehaviour
     {
         CurrentRun.DaysSurvived = finalDay;
 
-        // Check for longest survival!
-        if (finalDay > GameStats.Lifetime.HighestDaySurvived)
-            GameStats.Lifetime.HighestDaySurvived = finalDay;
+        if (finalDay > GameStats.Lifetime.HighestDaySurvived) GameStats.Lifetime.HighestDaySurvived = finalDay;
+        if (CurrentRun.MonstersKilled > GameStats.Lifetime.MostMonstersKilledInOneRun) GameStats.Lifetime.MostMonstersKilledInOneRun = CurrentRun.MonstersKilled;
+        if (CurrentRun.WallsBroken > GameStats.Lifetime.MostWallsBrokenInOneRun) GameStats.Lifetime.MostWallsBrokenInOneRun = CurrentRun.WallsBroken;
 
-        // Check for Personal Bests!
-        if (CurrentRun.MonstersKilled > GameStats.Lifetime.MostMonstersKilledInOneRun)
-            GameStats.Lifetime.MostMonstersKilledInOneRun = CurrentRun.MonstersKilled;
-
-        if (CurrentRun.WallsBroken > GameStats.Lifetime.MostWallsBrokenInOneRun)
-            GameStats.Lifetime.MostWallsBrokenInOneRun = CurrentRun.WallsBroken;
-
-        // === NEW: ONLY RECORD THE BEST RUN IF IT IS A WIN (DAY 31) ===
         if (finalDay >= 30)
         {
             bool isNewBest = false;
-
-            // 1. Calculate the score
             int currentScore = CurrentRun.MonstersKilled + CurrentRun.WallsBroken + CurrentRun.StepsTaken + CurrentRun.DaysSurvived;
-
-            // 2. Generate the detailed text string for the Leaderboard Metadata!
             string runDetails = $"The {CurrentRun.RunNumber} try: {CurrentRun.CharacterName} - Day {CurrentRun.DaysSurvived} | {CurrentRun.StepsTaken} Moves | {CurrentRun.TurnsTaken} Turns | {CurrentRun.MonstersKilled} Kills | {CurrentRun.WallsBroken} Walls";
 
-            // 3. ALWAYS push the winning score AND the detailed text to the Leaderboard!
-            if (UGSManager.Instance != null)
-            {
-                UGSManager.Instance.SubmitDailyScore(currentScore, runDetails);
-            }
+            if (UGSManager.Instance != null) UGSManager.Instance.SubmitDailyScore(currentScore, runDetails);
 
-            // 4. Check if this is their first win ever
-            if (GameStats.Lifetime.BestRun == null || GameStats.Lifetime.BestRun.DaysSurvived == 0)
-            {
-                isNewBest = true;
-            }
+            if (GameStats.Lifetime.BestRun == null || GameStats.Lifetime.BestRun.DaysSurvived == 0) isNewBest = true;
             else
             {
-                // 5. Compare with their old local best
                 int oldBestScore = GameStats.Lifetime.BestRun.MonstersKilled + GameStats.Lifetime.BestRun.WallsBroken + GameStats.Lifetime.BestRun.StepsTaken + GameStats.Lifetime.BestRun.DaysSurvived;
-
-                if (currentScore > oldBestScore)
-                {
-                    isNewBest = true;
-                }
+                if (currentScore > oldBestScore) isNewBest = true;
             }
 
-            // 6. If it's a new best, save it locally to their profile
             if (isNewBest)
             {
                 GameStats.Lifetime.BestRun = new RunStats
@@ -154,15 +147,9 @@ public class StatisticsManager : MonoBehaviour
                 };
             }
         }
-        // =============================================================
-        // =============================================================
-
-        // WE DELETED THE "PastRuns.Add(CurrentRun)" LINE SO IT STOPS SAVING 1000 RUNS!
-
-        SaveStats(); // Instantly push this optimized data to the Cloud
+        SaveStats();
     }
 
-    // === NEW DETAILED TRACKING FUNCTIONS ===
     public void AddWin() { GameStats.Lifetime.TotalWins++; }
     public void AddDamageTaken() { GameStats.Lifetime.TotalHitsTaken++; }
 
@@ -180,66 +167,55 @@ public class StatisticsManager : MonoBehaviour
     public void AddFoodEaten(string foodName)
     {
         GameStats.Lifetime.TotalFoodEaten++;
-        string lowerName = foodName.ToLower();
-
-        // Unity adds "(Clone)" to prefabs, so we just check if the name CONTAINS the word
-        if (lowerName.Contains("soda")) GameStats.Lifetime.SodaDrank++;
-        else if (lowerName.Contains("burger")) GameStats.Lifetime.BurgersEaten++;
-        else if (lowerName.Contains("fruit")) GameStats.Lifetime.FruitEaten++;
-        else if (lowerName.Contains("chicken")) GameStats.Lifetime.ChickenEaten++;
-        else if (lowerName.Contains("fish")) GameStats.Lifetime.FishEaten++;
-        else if (lowerName.Contains("salad")) GameStats.Lifetime.SaladEaten++;
+        if (foodName.IndexOf("soda", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.SodaDrank++;
+        else if (foodName.IndexOf("burger", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.BurgersEaten++;
+        else if (foodName.IndexOf("fruit", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.FruitEaten++;
+        else if (foodName.IndexOf("chicken", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.ChickenEaten++;
+        else if (foodName.IndexOf("fish", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.FishEaten++;
+        else if (foodName.IndexOf("salad", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.SaladEaten++;
     }
 
     public void AddWallBroken(string wallName)
     {
         if (CurrentRun != null) CurrentRun.WallsBroken++;
         GameStats.Lifetime.TotalWallsBroken++;
-        string lowerName = wallName.ToLower();
-
-        // Check the specific versions first!
-        if (lowerName.Contains("pink")) GameStats.Lifetime.PinkRockBroken++;
-        else if (lowerName.Contains("cactustype3")) GameStats.Lifetime.CactusType3Broken++;
-        else if (lowerName.Contains("cactustype2")) GameStats.Lifetime.CactusType2Broken++;
-        else if (lowerName.Contains("cactus")) GameStats.Lifetime.CactusBroken++;
-        else if (lowerName.Contains("walltype3")) GameStats.Lifetime.WallType3Broken++;
-        else if (lowerName.Contains("walltype2")) GameStats.Lifetime.WallType2Broken++;
-        else GameStats.Lifetime.NormalWallBroken++; // Default dirt wall
+        if (wallName.IndexOf("pink", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.PinkRockBroken++;
+        else if (wallName.IndexOf("cactustype3", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.CactusType3Broken++;
+        else if (wallName.IndexOf("cactustype2", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.CactusType2Broken++;
+        else if (wallName.IndexOf("cactus", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.CactusBroken++;
+        else if (wallName.IndexOf("walltype3", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.WallType3Broken++;
+        else if (wallName.IndexOf("walltype2", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.WallType2Broken++;
+        else GameStats.Lifetime.NormalWallBroken++;
     }
 
     public void AddMonsterKilled(string monsterName)
     {
         if (CurrentRun != null) CurrentRun.MonstersKilled++;
         GameStats.Lifetime.TotalMonstersKilled++;
-        string lowerName = monsterName.ToLower();
-
-        if (lowerName.Contains("elite")) GameStats.Lifetime.EliteZombieKilled++;
-        else if (lowerName.Contains("fly")) GameStats.Lifetime.FlyGH28Killed++;
-        else if (lowerName.Contains("mummy")) GameStats.Lifetime.MummyKilled++;
-        else if (lowerName.Contains("mutant")) GameStats.Lifetime.MutantSlimeKilled++;
-        else if (lowerName.Contains("slime")) GameStats.Lifetime.SlimeKilled++;
-        else GameStats.Lifetime.ZombieKilled++; // Default normal zombie
+        if (monsterName.IndexOf("elite", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.EliteZombieKilled++;
+        else if (monsterName.IndexOf("fly", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.FlyGH28Killed++;
+        else if (monsterName.IndexOf("mummy", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.MummyKilled++;
+        else if (monsterName.IndexOf("mutant", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.MutantSlimeKilled++;
+        else if (monsterName.IndexOf("slime", System.StringComparison.OrdinalIgnoreCase) >= 0) GameStats.Lifetime.SlimeKilled++;
+        else GameStats.Lifetime.ZombieKilled++;
     }
 
     public void UpdateHighestFood(int currentFood)
     {
-        if (currentFood > GameStats.Lifetime.HighestFoodHeld)
-        {
-            GameStats.Lifetime.HighestFoodHeld = currentFood;
-        }
+        if (currentFood > GameStats.Lifetime.HighestFoodHeld) GameStats.Lifetime.HighestFoodHeld = currentFood;
     }
 
     private void SaveStats()
     {
         string json = JsonUtility.ToJson(GameStats);
-        PlayerPrefs.SetString("GameStatistics", json);
-        PlayerPrefs.Save();
+        SecurePrefs.SetString("GameStatistics", json);
+        SecurePrefs.Save();
         if (UGSManager.Instance != null) UGSManager.Instance.SyncLocalToCloud();
     }
 
     private void LoadStats()
     {
-        string json = PlayerPrefs.GetString("GameStatistics", "");
+        string json = SecurePrefs.GetString("GameStatistics", "");
         if (string.IsNullOrEmpty(json)) GameStats = new AllGameStats();
         else GameStats = JsonUtility.FromJson<AllGameStats>(json);
     }

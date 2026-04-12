@@ -14,16 +14,8 @@ public class FloatingText : MonoBehaviour
 
     void Awake()
     {
+        // Awake only gets components now! No destroying allowed!
         m_TextMesh = GetComponent<TextMeshPro>();
-
-        // Give it a little random jitter so numbers don't perfectly overlap
-        transform.localPosition += new Vector3(
-            Random.Range(-RandomizeOffset.x, RandomizeOffset.x),
-            Random.Range(-RandomizeOffset.y, RandomizeOffset.y),
-            0);
-
-        // Tell Unity to destroy this object after 'DestroyTime' seconds
-        Destroy(gameObject, DestroyTime);
     }
 
     public void Setup(string text, bool isDamage)
@@ -32,6 +24,19 @@ public class FloatingText : MonoBehaviour
 
         m_TextMesh.text = text;
         m_TextMesh.color = isDamage ? DamageColor : HealColor;
+
+        // === FIXED: Apply jitter AFTER the pooler has assigned the position! ===
+        transform.localPosition += new Vector3(
+            Random.Range(-RandomizeOffset.x, RandomizeOffset.x),
+            Random.Range(-RandomizeOffset.y, RandomizeOffset.y), 0);
+    }
+
+    private void OnEnable()
+    {
+        if (m_TextMesh == null) m_TextMesh = GetComponent<TextMeshPro>();
+        m_TextMesh.color = new Color(m_TextMesh.color.r, m_TextMesh.color.g, m_TextMesh.color.b, 1f);
+
+        Invoke(nameof(HideAndReturn), DestroyTime);
     }
 
     void Update()
@@ -46,5 +51,12 @@ public class FloatingText : MonoBehaviour
             c.a -= (1f / DestroyTime) * Time.deltaTime; // Reduce the alpha (transparency)
             m_TextMesh.color = c;
         }
+    }
+
+
+    private void HideAndReturn()
+    {
+        if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(gameObject);
+        else Destroy(gameObject);
     }
 }

@@ -118,8 +118,10 @@ public class PlayerController : MonoBehaviour
         {
             transform.position = Vector3.MoveTowards(transform.position, m_MoveTarget, MoveSpeed * Time.deltaTime);
 
-            if (transform.position == m_MoveTarget)
+            // === FIXED: Check if the player is "close enough" to the target ===
+            if (Vector3.Distance(transform.position, m_MoveTarget) < 0.01f)
             {
+                transform.position = m_MoveTarget; // Snap perfectly to the grid center!
                 m_IsMoving = false;
                 m_Animator.SetBool("Moving", false);
 

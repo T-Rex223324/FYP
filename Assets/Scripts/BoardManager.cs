@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
-// === CHANGED: Added a specific SaveWall struct to remember the exact wall type! ===
 [System.Serializable]
 public struct SavePos { public int x, y; }
 
@@ -19,7 +18,6 @@ public class BoardSaveData
     public List<SavePos> elites = new List<SavePos>();
     public SavePos exit;
 }
-// =================================================================================
 
 public class BoardManager : MonoBehaviour
 {
@@ -117,6 +115,7 @@ public class BoardManager : MonoBehaviour
 
         m_CurrentDayCycle = ((currentLevel - 1) % 10) + 1;
         int sizeIncrease = m_CurrentDayCycle / 3;
+
         Width = 8 + sizeIncrease;
         Height = 8 + sizeIncrease;
 
@@ -149,7 +148,11 @@ public class BoardManager : MonoBehaviour
 
         m_EmptyCellsList.Remove(new Vector2Int(1, 1));
         Vector2Int endCoord = new Vector2Int(Width - 2, Height - 2);
-        AddObject(Instantiate(m_ActiveExitCellPrefab), endCoord);
+
+        ExitCellObject exitObj = ObjectPooler.Instance.SpawnFromPool(m_ActiveExitCellPrefab.gameObject, Vector3.zero).GetComponent<ExitCellObject>();
+        exitObj.Type = CellObject.ObjectType.Exit;
+        AddObject(exitObj, endCoord);
+
         m_EmptyCellsList.Remove(endCoord);
 
         GenerateWall();
@@ -172,35 +175,14 @@ public class BoardManager : MonoBehaviour
                 {
                     SavePos p = new SavePos { x = x, y = y };
 
-                    if (cell.ContainedObject.GetComponent<WallObject>() != null)
-                    {
-                        // === NEW: Figure out exactly WHICH wall prefab this is! ===
-                        string wallName = cell.ContainedObject.gameObject.name.Replace("(Clone)", "").Trim();
-                        int prefabIndex = 0; // Default to 0
-                        for (int i = 0; i < m_ActiveWallPrefabs.Length; i++)
-                        {
-                            if (m_ActiveWallPrefabs[i].name == wallName)
-                            {
-                                prefabIndex = i;
-                                break;
-                            }
-                        }
+                    CellObject.ObjectType type = cell.ContainedObject.Type;
 
-                        data.walls.Add(new SaveWall { x = x, y = y, typeIndex = prefabIndex });
-                        // ===========================================================
-                    }
-                    else if (cell.ContainedObject.GetComponent<FoodObject>() != null)
-                    {
-                        if (cell.ContainedObject.gameObject.name.Contains("Big")) data.bigFoods.Add(p);
-                        else data.smallFoods.Add(p);
-                    }
-                    else if (cell.ContainedObject.GetComponent<Enemy>() != null)
-                    {
-                        if (cell.ContainedObject.gameObject.name.Contains("Elite")) data.elites.Add(p);
-                        else data.enemies.Add(p);
-                    }
-                    else if (cell.ContainedObject.GetComponent<ExitCellObject>() != null)
-                        data.exit = p;
+                    if (type == CellObject.ObjectType.Wall) data.walls.Add(new SaveWall { x = x, y = y, typeIndex = cell.ContainedObject.PrefabIndex });
+                    else if (type == CellObject.ObjectType.SmallFood) data.smallFoods.Add(p);
+                    else if (type == CellObject.ObjectType.BigFood) data.bigFoods.Add(p);
+                    else if (type == CellObject.ObjectType.Enemy) data.enemies.Add(p);
+                    else if (type == CellObject.ObjectType.EliteEnemy) data.elites.Add(p);
+                    else if (type == CellObject.ObjectType.Exit) data.exit = p;
                 }
             }
         }
@@ -213,6 +195,7 @@ public class BoardManager : MonoBehaviour
 
         m_CurrentDayCycle = ((currentLevel - 1) % 10) + 1;
         int sizeIncrease = m_CurrentDayCycle / 3;
+
         Width = 8 + sizeIncrease;
         Height = 8 + sizeIncrease;
 
@@ -245,38 +228,53 @@ public class BoardManager : MonoBehaviour
 
         BoardSaveData data = JsonUtility.FromJson<BoardSaveData>(jsonMap);
 
-        // === CHANGED: Spawn the exact wall prefab that was saved! ===
         foreach (SaveWall w in data.walls)
         {
-            // Safety check to ensure the index isn't out of bounds
             int safeIndex = Mathf.Clamp(w.typeIndex, 0, m_ActiveWallPrefabs.Length - 1);
-            WallObject prefab = m_ActiveWallPrefabs[safeIndex];
-            AddObject(Instantiate(prefab), new Vector2Int(w.x, w.y));
+            WallObject wall = ObjectPooler.Instance.SpawnFromPool(m_ActiveWallPrefabs[safeIndex].gameObject, Vector3.zero).GetComponent<WallObject>();
+            wall.Type = CellObject.ObjectType.Wall;
+            wall.PrefabIndex = safeIndex;
+            AddObject(wall, new Vector2Int(w.x, w.y));
+            m_EmptyCellsList.Remove(new Vector2Int(w.x, w.y));
         }
-        // ============================================================
 
         foreach (SavePos p in data.smallFoods)
         {
-            AddObject(Instantiate(m_ActiveFoodPrefabs[0]).GetComponent<FoodObject>(), new Vector2Int(p.x, p.y));
+            CellObject f = ObjectPooler.Instance.SpawnFromPool(m_ActiveFoodPrefabs[0], Vector3.zero).GetComponent<CellObject>();
+            f.Type = CellObject.ObjectType.SmallFood;
+            AddObject(f, new Vector2Int(p.x, p.y));
+            m_EmptyCellsList.Remove(new Vector2Int(p.x, p.y));
         }
 
         foreach (SavePos p in data.bigFoods)
         {
             GameObject prefab = m_ActiveFoodPrefabs.Length > 1 ? m_ActiveFoodPrefabs[1] : m_ActiveFoodPrefabs[0];
-            AddObject(Instantiate(prefab).GetComponent<FoodObject>(), new Vector2Int(p.x, p.y));
+            CellObject f = ObjectPooler.Instance.SpawnFromPool(prefab, Vector3.zero).GetComponent<CellObject>();
+            f.Type = CellObject.ObjectType.BigFood;
+            AddObject(f, new Vector2Int(p.x, p.y));
+            m_EmptyCellsList.Remove(new Vector2Int(p.x, p.y));
         }
 
         foreach (SavePos p in data.enemies)
         {
-            AddObject(Instantiate(m_ActiveEnemyPrefab).GetComponent<Enemy>(), new Vector2Int(p.x, p.y));
+            CellObject e = ObjectPooler.Instance.SpawnFromPool(m_ActiveEnemyPrefab, Vector3.zero).GetComponent<CellObject>();
+            e.Type = CellObject.ObjectType.Enemy;
+            AddObject(e, new Vector2Int(p.x, p.y));
+            m_EmptyCellsList.Remove(new Vector2Int(p.x, p.y));
         }
 
         foreach (SavePos p in data.elites)
         {
-            AddObject(Instantiate(m_ActiveEliteEnemyPrefab).GetComponent<Enemy>(), new Vector2Int(p.x, p.y));
+            CellObject e = ObjectPooler.Instance.SpawnFromPool(m_ActiveEliteEnemyPrefab, Vector3.zero).GetComponent<CellObject>();
+            e.Type = CellObject.ObjectType.EliteEnemy;
+            AddObject(e, new Vector2Int(p.x, p.y));
+            m_EmptyCellsList.Remove(new Vector2Int(p.x, p.y));
         }
 
-        AddObject(Instantiate(m_ActiveExitCellPrefab), new Vector2Int(data.exit.x, data.exit.y));
+        ExitCellObject exit = ObjectPooler.Instance.SpawnFromPool(m_ActiveExitCellPrefab.gameObject, Vector3.zero).GetComponent<ExitCellObject>();
+        exit.Type = CellObject.ObjectType.Exit;
+        AddObject(exit, new Vector2Int(data.exit.x, data.exit.y));
+        m_EmptyCellsList.Remove(new Vector2Int(data.exit.x, data.exit.y));
 
         SetupCamera();
     }
@@ -294,12 +292,20 @@ public class BoardManager : MonoBehaviour
         if (m_Tilemap == null) m_Tilemap = GetComponentInChildren<Tilemap>();
         if (m_Tilemap != null) m_Tilemap.ClearAllTiles();
 
-        CellObject[] allObjects = FindObjectsByType<CellObject>(FindObjectsSortMode.None);
-        foreach (CellObject obj in allObjects)
+        if (m_BoardData != null)
         {
-            Destroy(obj.gameObject);
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    if (m_BoardData[x, y] != null && m_BoardData[x, y].ContainedObject != null)
+                    {
+                        if (ObjectPooler.Instance != null) ObjectPooler.Instance.ReturnToPool(m_BoardData[x, y].ContainedObject.gameObject);
+                        else Destroy(m_BoardData[x, y].ContainedObject.gameObject);
+                    }
+                }
+            }
         }
-
         m_BoardData = null;
     }
 
@@ -329,23 +335,13 @@ public class BoardManager : MonoBehaviour
         CellData data = m_BoardData[coord.x, coord.y];
         obj.transform.position = CellToWorld(coord);
         data.ContainedObject = obj;
+
+        // === THE FIX ===
+        // I deleted "data.Passable = false;" from here! 
+        // This makes sure the player's arrow keys actually work when bumping into things!
+        // ===============
+
         obj.Init(coord);
-    }
-
-    void GenerateFood()
-    {
-        int sizeIncrease = m_CurrentDayCycle / 3;
-        int foodCount = Random.Range(MinFoodCount + sizeIncrease, MaxFoodCount + sizeIncrease + 1);
-
-        for (int i = 0; i < foodCount; ++i)
-        {
-            if (m_EmptyCellsList.Count == 0) break;
-            int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
-            Vector2Int coord = m_EmptyCellsList[randomIndex];
-            m_EmptyCellsList.RemoveAt(randomIndex);
-            GameObject newFood = Instantiate(m_ActiveFoodPrefabs[Random.Range(0, m_ActiveFoodPrefabs.Length)]);
-            AddObject(newFood.GetComponent<FoodObject>(), coord);
-        }
     }
 
     void GenerateWall()
@@ -367,8 +363,44 @@ public class BoardManager : MonoBehaviour
             if (m_EmptyCellsList.Count == 0) break;
             int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
             Vector2Int coord = m_EmptyCellsList[randomIndex];
-            m_EmptyCellsList.RemoveAt(randomIndex);
-            AddObject(Instantiate(allowedWalls[Random.Range(0, allowedWalls.Count)]), coord);
+
+            m_EmptyCellsList[randomIndex] = m_EmptyCellsList[m_EmptyCellsList.Count - 1];
+            m_EmptyCellsList.RemoveAt(m_EmptyCellsList.Count - 1);
+
+            int randomAllowedIndex = Random.Range(0, allowedWalls.Count);
+            WallObject wallPrefab = allowedWalls[randomAllowedIndex];
+
+            int trueIndex = System.Array.IndexOf(m_ActiveWallPrefabs, wallPrefab);
+            if (trueIndex == -1) trueIndex = 0;
+
+            WallObject newWall = ObjectPooler.Instance.SpawnFromPool(wallPrefab.gameObject, Vector3.zero).GetComponent<WallObject>();
+            newWall.Type = CellObject.ObjectType.Wall;
+            newWall.PrefabIndex = trueIndex;
+
+            AddObject(newWall, coord);
+        }
+    }
+
+    void GenerateFood()
+    {
+        int sizeIncrease = m_CurrentDayCycle / 3;
+        int foodCount = Random.Range(MinFoodCount + sizeIncrease, MaxFoodCount + sizeIncrease + 1);
+
+        for (int i = 0; i < foodCount; ++i)
+        {
+            if (m_EmptyCellsList.Count == 0) break;
+            int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
+            Vector2Int coord = m_EmptyCellsList[randomIndex];
+
+            m_EmptyCellsList[randomIndex] = m_EmptyCellsList[m_EmptyCellsList.Count - 1];
+            m_EmptyCellsList.RemoveAt(m_EmptyCellsList.Count - 1);
+
+            int prefabIndex = Random.Range(0, m_ActiveFoodPrefabs.Length);
+            GameObject newFood = ObjectPooler.Instance.SpawnFromPool(m_ActiveFoodPrefabs[prefabIndex], Vector3.zero);
+            CellObject foodObj = newFood.GetComponent<CellObject>();
+
+            foodObj.Type = m_ActiveFoodPrefabs[prefabIndex].name.Contains("Big") ? CellObject.ObjectType.BigFood : CellObject.ObjectType.SmallFood;
+            AddObject(foodObj, coord);
         }
     }
 
@@ -382,8 +414,13 @@ public class BoardManager : MonoBehaviour
         {
             int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
             Vector2Int coord = m_EmptyCellsList[randomIndex];
-            m_EmptyCellsList.RemoveAt(randomIndex);
-            AddObject(Instantiate(m_ActiveEliteEnemyPrefab).GetComponent<Enemy>(), coord);
+
+            m_EmptyCellsList[randomIndex] = m_EmptyCellsList[m_EmptyCellsList.Count - 1];
+            m_EmptyCellsList.RemoveAt(m_EmptyCellsList.Count - 1);
+
+            CellObject elite = ObjectPooler.Instance.SpawnFromPool(m_ActiveEliteEnemyPrefab, Vector3.zero).GetComponent<CellObject>();
+            elite.Type = CellObject.ObjectType.EliteEnemy;
+            AddObject(elite, coord);
         }
 
         for (int i = 0; i < enemyCount; ++i)
@@ -391,8 +428,13 @@ public class BoardManager : MonoBehaviour
             if (m_EmptyCellsList.Count == 0) break;
             int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
             Vector2Int coord = m_EmptyCellsList[randomIndex];
-            m_EmptyCellsList.RemoveAt(randomIndex);
-            AddObject(Instantiate(m_ActiveEnemyPrefab).GetComponent<Enemy>(), coord);
+
+            m_EmptyCellsList[randomIndex] = m_EmptyCellsList[m_EmptyCellsList.Count - 1];
+            m_EmptyCellsList.RemoveAt(m_EmptyCellsList.Count - 1);
+
+            CellObject normal = ObjectPooler.Instance.SpawnFromPool(m_ActiveEnemyPrefab, Vector3.zero).GetComponent<CellObject>();
+            normal.Type = CellObject.ObjectType.Enemy;
+            AddObject(normal, coord);
         }
     }
 }

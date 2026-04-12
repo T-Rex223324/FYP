@@ -9,6 +9,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Unity.Services.Leaderboards;
+using Unity.Services.CloudCode;
 
 public class UGSManager : MonoBehaviour
 {
@@ -37,17 +38,17 @@ public class UGSManager : MonoBehaviour
             Debug.Log("Đang khởi tạo Unity Services..."); // Tells us the script is awake!
             await UnityServices.InitializeAsync();
 
-            m_LocalDeviceToken = PlayerPrefs.GetString("DeviceToken", "");
+            m_LocalDeviceToken = SecurePrefs.GetString("DeviceToken", "");
             if (string.IsNullOrEmpty(m_LocalDeviceToken))
             {
                 m_LocalDeviceToken = System.Guid.NewGuid().ToString();
-                PlayerPrefs.SetString("DeviceToken", m_LocalDeviceToken);
-                PlayerPrefs.Save();
+                SecurePrefs.SetString("DeviceToken", m_LocalDeviceToken);
+                SecurePrefs.Save();
             }
 
             if (!AuthenticationService.Instance.IsSignedIn)
             {
-                string savedTransferCode = PlayerPrefs.GetString("TransferCode", "");
+                string savedTransferCode = SecurePrefs.GetString("TransferCode", "");
 
                 if (!string.IsNullOrEmpty(savedTransferCode))
                 {
@@ -75,7 +76,7 @@ public class UGSManager : MonoBehaviour
         try
         {
             // 1. Kiểm tra xem tài khoản này đã từng tạo mã chưa
-            string secureCode = PlayerPrefs.GetString("TransferCode", "");
+            string secureCode = SecurePrefs.GetString("TransferCode", "");
 
             if (string.IsNullOrEmpty(secureCode))
             {
@@ -83,8 +84,8 @@ public class UGSManager : MonoBehaviour
                 secureCode = GenerateSecureOTP();
                 await AuthenticationService.Instance.AddUsernamePasswordAsync(secureCode, SECRET_PASSWORD);
 
-                PlayerPrefs.SetString("TransferCode", secureCode);
-                PlayerPrefs.Save();
+                SecurePrefs.SetString("TransferCode", secureCode);
+                SecurePrefs.Save();
             }
 
             // 2. BẬT MÃ (Khởi động bộ đếm 5 phút)
@@ -148,8 +149,8 @@ public class UGSManager : MonoBehaviour
 
             // 3. MÃ HỢP LỆ! Lưu lại mã vào máy mới và tải Save
             Debug.Log("Mã hợp lệ! Đang tải dữ liệu...");
-            PlayerPrefs.SetString("TransferCode", codeToUse);
-            PlayerPrefs.Save();
+            SecurePrefs.SetString("TransferCode", codeToUse);
+            SecurePrefs.Save();
 
             await SyncCloudToLocal(forceOverwriteCloudToken: true);
 
@@ -186,7 +187,7 @@ public class UGSManager : MonoBehaviour
             if (!forceOverwriteCloudToken && savedData.TryGetValue("DeviceToken", out var cloudTokenItem))
             {
                 // 2. Check if we are a Guest
-                bool isGuest = string.IsNullOrEmpty(PlayerPrefs.GetString("TransferCode", ""));
+                bool isGuest = string.IsNullOrEmpty(SecurePrefs.GetString("TransferCode", ""));
 
                 // 3. If we are NOT a guest, compare the tokens!
                 if (!isGuest)
@@ -199,16 +200,16 @@ public class UGSManager : MonoBehaviour
                     }
                 }
             }
-            if (savedData.TryGetValue("GameStatistics", out var statsItem)) PlayerPrefs.SetString("GameStatistics", statsItem.Value.GetAsString());
-            if (savedData.TryGetValue("SavedMap", out var mapItem)) PlayerPrefs.SetString("SavedMap", mapItem.Value.GetAsString());
-            if (savedData.TryGetValue("SavedDay", out var dayItem)) PlayerPrefs.SetInt("SavedDay", dayItem.Value.GetAs<int>());
-            if (savedData.TryGetValue("SavedFood", out var foodItem)) PlayerPrefs.SetInt("SavedFood", foodItem.Value.GetAs<int>());
-            if (savedData.TryGetValue("SavedChar", out var charItem)) PlayerPrefs.SetInt("SavedChar", charItem.Value.GetAs<int>());
-            if (savedData.TryGetValue("PlayerX", out var pxItem)) PlayerPrefs.SetInt("PlayerX", pxItem.Value.GetAs<int>());
-            if (savedData.TryGetValue("PlayerY", out var pyItem)) PlayerPrefs.SetInt("PlayerY", pyItem.Value.GetAs<int>());
-            if (savedData.TryGetValue("HasSave", out var saveItem)) PlayerPrefs.SetInt("HasSave", saveItem.Value.GetAs<int>());
+            if (savedData.TryGetValue("GameStatistics", out var statsItem)) SecurePrefs.SetString("GameStatistics", statsItem.Value.GetAsString());
+            if (savedData.TryGetValue("SavedMap", out var mapItem)) SecurePrefs.SetString("SavedMap", mapItem.Value.GetAsString());
+            if (savedData.TryGetValue("SavedDay", out var dayItem)) SecurePrefs.SetInt("SavedDay", dayItem.Value.GetAs<int>());
+            if (savedData.TryGetValue("SavedFood", out var foodItem)) SecurePrefs.SetInt("SavedFood", foodItem.Value.GetAs<int>());
+            if (savedData.TryGetValue("SavedChar", out var charItem)) SecurePrefs.SetInt("SavedChar", charItem.Value.GetAs<int>());
+            if (savedData.TryGetValue("PlayerX", out var pxItem)) SecurePrefs.SetInt("PlayerX", pxItem.Value.GetAs<int>());
+            if (savedData.TryGetValue("PlayerY", out var pyItem)) SecurePrefs.SetInt("PlayerY", pyItem.Value.GetAs<int>());
+            if (savedData.TryGetValue("HasSave", out var saveItem)) SecurePrefs.SetInt("HasSave", saveItem.Value.GetAs<int>());
 
-            PlayerPrefs.Save();
+            SecurePrefs.Save();
 
             if (forceOverwriteCloudToken)
             {
@@ -235,7 +236,7 @@ public class UGSManager : MonoBehaviour
                 string cloudToken = cloudTokenItem.Value.GetAsString();
 
                 // === NEW FIX: Don't kick Guests! ===
-                bool isGuest = string.IsNullOrEmpty(PlayerPrefs.GetString("TransferCode", ""));
+                bool isGuest = string.IsNullOrEmpty(SecurePrefs.GetString("TransferCode", ""));
 
                 if (!isGuest && cloudToken != m_LocalDeviceToken)
                 {
@@ -247,14 +248,14 @@ public class UGSManager : MonoBehaviour
             var data = new Dictionary<string, object>
             {
                 { "DeviceToken", m_LocalDeviceToken },
-                { "GameStatistics", PlayerPrefs.GetString("GameStatistics", "") },
-                { "SavedMap", PlayerPrefs.GetString("SavedMap", "") },
-                { "SavedDay", PlayerPrefs.GetInt("SavedDay", 1) },
-                { "SavedFood", PlayerPrefs.GetInt("SavedFood", 100) },
-                { "SavedChar", PlayerPrefs.GetInt("SavedChar", 1) },
-                { "PlayerX", PlayerPrefs.GetInt("PlayerX", 1) },
-                { "PlayerY", PlayerPrefs.GetInt("PlayerY", 1) },
-                { "HasSave", PlayerPrefs.GetInt("HasSave", 0) }
+                { "GameStatistics", SecurePrefs.GetString("GameStatistics", "") },
+                { "SavedMap", SecurePrefs.GetString("SavedMap", "") },
+                { "SavedDay", SecurePrefs.GetInt("SavedDay", 1) },
+                { "SavedFood", SecurePrefs.GetInt("SavedFood", 100) },
+                { "SavedChar", SecurePrefs.GetInt("SavedChar", 1) },
+                { "PlayerX", SecurePrefs.GetInt("PlayerX", 1) },
+                { "PlayerY", SecurePrefs.GetInt("PlayerY", 1) },
+                { "HasSave", SecurePrefs.GetInt("HasSave", 0) }
             };
 
             await CloudSaveService.Instance.Data.Player.SaveAsync(data);
@@ -301,10 +302,10 @@ public class UGSManager : MonoBehaviour
         }
 
         // Wipe local memory and restart as a brand new Guest
-        PlayerPrefs.DeleteAll();
+        SecurePrefs.DeleteAll();
         m_LocalDeviceToken = System.Guid.NewGuid().ToString();
-        PlayerPrefs.SetString("DeviceToken", m_LocalDeviceToken);
-        PlayerPrefs.Save();
+        SecurePrefs.SetString("DeviceToken", m_LocalDeviceToken);
+        SecurePrefs.Save();
 
         // === THE FIX ===
         // Destroy the immortal UGSManager so a fresh one spawns!
@@ -359,7 +360,7 @@ public class UGSManager : MonoBehaviour
                 string cloudToken = cloudTokenItem.Value.GetAsString();
 
                 // === NEW FIX: Don't kick Guests! ===
-                bool isGuest = string.IsNullOrEmpty(PlayerPrefs.GetString("TransferCode", ""));
+                bool isGuest = string.IsNullOrEmpty(SecurePrefs.GetString("TransferCode", ""));
 
                 // If they are not a guest, and the token changed... KICK!
                 if (!isGuest && !string.IsNullOrEmpty(cloudToken) && cloudToken != m_LocalDeviceToken)
@@ -444,73 +445,169 @@ public class UGSManager : MonoBehaviour
         public string details;
     }
 
-    public async void SubmitDailyScore(int score, string metadata)
+    public async void SubmitDailyScore(int calculatedScore, string metadata)
     {
         if (IsCloudSyncDisabled || !AuthenticationService.Instance.IsSignedIn) return;
+        if (StatisticsManager.Instance == null) return;
 
         try
         {
-            // 2. Convert the plain text string into a proper JSON object
-            var options = new AddPlayerScoreOptions
+            var run = StatisticsManager.Instance.CurrentRun;
+
+            // 1. Package the RAW facts (The server will do the math!)
+            var arguments = new Dictionary<string, object>
             {
-                Metadata = new ScoreMetadata { details = metadata }
+                { "daysSurvived", run.DaysSurvived },
+                { "monstersKilled", run.MonstersKilled },
+                { "stepsTaken", run.StepsTaken },
+                { "wallsBroken", run.WallsBroken },
+                { "metadataText", metadata }
             };
 
-            await LeaderboardsService.Instance.AddPlayerScoreAsync("DailyLeaderboard", score, options);
-            Debug.Log("Đã gửi điểm và Metadata lên Bảng xếp hạng Daily: " + score);
+            // 2. Send it to the unhackable Cloud Code script!
+            string response = await CloudCodeService.Instance.CallEndpointAsync<string>("SubmitScoreSecurely", arguments);
+            Debug.Log("Server Reply: " + response);
         }
         catch (System.Exception e)
         {
-            Debug.LogError("Lỗi gửi điểm Leaderboard: " + e.Message);
+            Debug.LogError("Cloud Code Error: " + e.Message);
         }
     }
 
-    public async Task<string> FetchLeaderboardData()
+    // === NEW UI TOOLKIT LEADERBOARD GENERATOR ===
+    public async Task PopulateLeaderboardUI(VisualElement container)
     {
+        if (container == null) return;
+        container.Clear(); // Wipe any old data
+
+        // Show a loading message
+        Label loadingLabel = new Label("Loading Leaderboard...");
+        loadingLabel.style.color = Color.white;
+        loadingLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+        loadingLabel.style.marginTop = 20;
+        container.Add(loadingLabel);
+
         try
         {
             var scoresResponse = await LeaderboardsService.Instance.GetScoresAsync("DailyLeaderboard", new GetScoresOptions { Limit = 10, IncludeMetadata = true });
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("<color=#FACC15><b>--- TOP 10 DAILY SURVIVORS ---</b></color>\n");
+            container.Clear(); // Remove loading text
+
+            // 1. CREATE HEADER ROW (Blue background)
+            VisualElement headerRow = CreateRow("RANK", "PLAYER", "SCORE", "DETAILS", new Color(0.15f, 0.35f, 0.75f), true);
+            container.Add(headerRow);
 
             if (scoresResponse.Results.Count == 0)
             {
-                sb.AppendLine("No one has played today! Be the first!");
-                return sb.ToString();
+                Label emptyLabel = new Label("No one has played today! Be the first!");
+                emptyLabel.style.color = Color.white;
+                emptyLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+                emptyLabel.style.marginTop = 20;
+                container.Add(emptyLabel);
+                return;
             }
 
-            foreach (var entry in scoresResponse.Results)
+            // 2. CREATE DATA ROWS
+            for (int i = 0; i < scoresResponse.Results.Count; i++)
             {
+                var entry = scoresResponse.Results[i];
                 string playerName = string.IsNullOrEmpty(entry.PlayerName) ? "Anonymous" : entry.PlayerName;
-
                 string metadataText = "No details recorded.";
 
-                // 4. Safely unwrap the JSON object back into plain text when downloading!
                 if (!string.IsNullOrEmpty(entry.Metadata))
                 {
                     try
                     {
+                        // Safely unwrap the JSON object back into plain text
                         var parsedData = JsonUtility.FromJson<ScoreMetadata>(entry.Metadata);
                         if (parsedData != null && !string.IsNullOrEmpty(parsedData.details))
                         {
                             metadataText = parsedData.details;
                         }
                     }
-                    catch { /* Ignore errors if an old score doesn't have proper JSON */ }
+                    catch { }
                 }
 
-                sb.AppendLine($"#{entry.Rank + 1}: <color=#FFFFFF><b>{playerName}</b></color> - <color=#4ADE80>{entry.Score} Pts</color>");
-                sb.AppendLine($"<size=18><color=#D1D5DB>{metadataText}</color></size>\n");
-            }
+                // Alternate row colors for that clean table look!
+                Color rowColor = (i % 2 == 0) ? new Color(0.1f, 0.15f, 0.3f) : new Color(0.08f, 0.12f, 0.25f);
 
-            return sb.ToString();
+                VisualElement row = CreateRow($"{(entry.Rank + 1).ToString("00")}", playerName, $"{entry.Score}", metadataText, rowColor, false);
+                container.Add(row);
+            }
         }
         catch (System.Exception e)
         {
-            Debug.LogError("Lỗi tải Bảng xếp hạng: " + e.Message);
-            return "Could not connect to Leaderboard. Please try again.";
+            Debug.LogError("Error loading leaderboard: " + e.Message);
+            container.Clear();
+            Label errorLabel = new Label("Could not connect to Leaderboard.");
+            errorLabel.style.color = Color.red;
+            container.Add(errorLabel);
         }
     }
 
+    // Helper method to generate a perfectly styled row block
+    // Helper method to generate a perfectly styled row block
+    private VisualElement CreateRow(string rank, string name, string score, string details, Color bgColor, bool isHeader)
+    {
+        VisualElement row = new VisualElement();
+        row.style.flexDirection = FlexDirection.Row;
+        row.style.width = Length.Percent(100);
+        row.style.backgroundColor = bgColor;
+
+        row.style.paddingTop = 20;
+        row.style.paddingBottom = 20;
+        row.style.paddingLeft = 25;
+        row.style.paddingRight = 25;
+        row.style.marginBottom = 8;
+        row.style.minHeight = 80;
+
+        row.style.borderBottomLeftRadius = 8;
+        row.style.borderBottomRightRadius = 8;
+        row.style.borderTopLeftRadius = 8;
+        row.style.borderTopRightRadius = 8;
+
+        // === FONT SIZE ADJUSTED TO FIT ===
+        // Size 28 and 24 are still huge, but will fit your long text!
+        int fontSize = isHeader ? 28 : 24;
+
+        // Rank Column (10% width)
+        row.Add(CreateColumnLabel(rank, 10, isHeader, TextAnchor.MiddleLeft, fontSize, Color.white));
+
+        // Name Column (20% width)
+        row.Add(CreateColumnLabel(name, 20, isHeader, TextAnchor.MiddleLeft, fontSize, Color.white));
+
+        // Score Column (15% width)
+        Color scoreColor = isHeader ? Color.white : new Color(0.3f, 0.9f, 0.5f);
+        row.Add(CreateColumnLabel(score, 15, isHeader, TextAnchor.MiddleCenter, fontSize, scoreColor));
+
+        // Details Column (55% width)
+        Color detailsColor = isHeader ? Color.white : new Color(0.8f, 0.8f, 0.8f);
+
+        // === CHANGED TO MIDDLE CENTER ===
+        row.Add(CreateColumnLabel(details, 55, false, TextAnchor.MiddleCenter, fontSize, detailsColor));
+
+        return row;
+    }
+
+    // Helper method to generate individual text columns
+    // Helper method to generate individual text columns
+    private Label CreateColumnLabel(string text, float widthPercent, bool isBold, TextAnchor alignment, int fontSize, Color fontColor)
+    {
+        Label lbl = new Label(text);
+        lbl.style.width = Length.Percent(widthPercent);
+        lbl.style.unityTextAlign = alignment;
+        lbl.style.whiteSpace = WhiteSpace.NoWrap;
+
+        // === ADD THIS LINE TO PREVENT OVERLAPPING ===
+        lbl.style.overflow = Overflow.Hidden;
+        // ============================================
+
+        lbl.style.color = fontColor;
+        lbl.style.fontSize = fontSize;
+
+        if (isBold) lbl.style.unityFontStyleAndWeight = FontStyle.Bold;
+
+        return lbl;
+    }
 }
+

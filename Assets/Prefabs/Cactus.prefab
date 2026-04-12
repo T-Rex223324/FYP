@@ -105,9 +105,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d24a5c29f584a404e819ca1daa22d54f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cactus
+  Type: 0
+  PrefabIndex: 0
   ObstacleTile: {fileID: 11400000, guid: 27319a65fcde4de47864c306eb834bcb, type: 2}
   DamagedTile: {fileID: 0}
   MaxHealth: 3
+  BreakParticlePrefab: {fileID: 5578967402716733044, guid: 2c45ac87c478df84f922884db2645a11, type: 3}
   Damage: 1
 --- !u!114 &-4578332667822215638
 MonoBehaviour:
@@ -121,6 +124,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e9404e078d49b4e843f2cab76ee8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WallObject
+  Type: 0
+  PrefabIndex: 0
   ObstacleTile: {fileID: 11400000, guid: 27319a65fcde4de47864c306eb834bcb, type: 2}
   DamagedTile: {fileID: 0}
   MaxHealth: 3
+  BreakParticlePrefab: {fileID: 5578967402716733044, guid: 2c45ac87c478df84f922884db2645a11, type: 3}

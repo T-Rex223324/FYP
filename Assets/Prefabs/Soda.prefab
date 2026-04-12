@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1102402761034599745}
   - component: {fileID: 7469999834299882375}
-  - component: {fileID: 7505224379417225999}
   - component: {fileID: 4031432498253137125}
   m_Layer: 0
   m_Name: Soda
@@ -36,6 +35,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7469999834299882375
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -54,6 +54,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -75,9 +77,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 5
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300036, guid: d2b0867186472fd44a2b5575468d08b4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -87,20 +91,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &7505224379417225999
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 527293730242160464}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cefea9b871b7bca4f9ee1dd117f504cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &4031432498253137125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,6 +104,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82d33b6e7312730489c748bf49b2c9fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Type: 0
+  PrefabIndex: 0
   AmountGranted: 7
   EatSounds:
   - {fileID: 8300000, guid: c27bd27db00c38e4f95da0a6619bb33f, type: 3}
