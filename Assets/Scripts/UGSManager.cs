@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Services.Authentication;
@@ -13,16 +14,23 @@ using Unity.Services.CloudCode;
 
 public class UGSManager : MonoBehaviour
 {
-
     public bool IsCloudSyncDisabled = false;
     private float m_LastFocusCheckTime = 0f;
 
     public static UGSManager Instance { get; private set; }
 
     private string m_LocalDeviceToken;
-
-    // We use a secret hardcoded password so the player only needs to remember their code!
     private readonly string SECRET_PASSWORD = "Save@30Days!";
+
+    private Coroutine m_RollingCodeCoroutine;
+
+    // === Bulletproof Kick & Warning Variables ===
+    private bool m_IsKicked = false;
+    private float m_KickTimer = 5f;
+
+    private bool m_IsShowingGuestWarning = false;
+    private string m_PendingLoginCode = "";
+    // =======================================
 
     private void Awake()
     {
@@ -35,7 +43,7 @@ public class UGSManager : MonoBehaviour
     {
         try
         {
-            Debug.Log("Đang khởi tạo Unity Services..."); // Tells us the script is awake!
+            Debug.Log("Đang khởi tạo Unity Services...");
             await UnityServices.InitializeAsync();
 
             m_LocalDeviceToken = SecurePrefs.GetString("DeviceToken", "");
@@ -44,6 +52,16 @@ public class UGSManager : MonoBehaviour
                 m_LocalDeviceToken = System.Guid.NewGuid().ToString();
                 SecurePrefs.SetString("DeviceToken", m_LocalDeviceToken);
                 SecurePrefs.Save();
+            }
+
+            // If we just got kicked from another device, DO NOT auto-login. 
+            // Stay as a fresh, clean Guest!
+            if (PlayerPrefs.GetInt("JustKicked", 0) == 1)
+            {
+                Debug.Log("Player was just kicked. Staying logged out on Main Menu as a new Guest.");
+                PlayerPrefs.DeleteKey("JustKicked");
+                PlayerPrefs.Save();
+                return;
             }
 
             if (!AuthenticationService.Instance.IsSignedIn)
@@ -61,13 +79,24 @@ public class UGSManager : MonoBehaviour
 
                 Debug.Log("Đã kết nối Cloud! ID: " + AuthenticationService.Instance.PlayerId);
                 await CheckAndSyncCloudToLocal();
-                //StartCoroutine(HeartbeatRoutine());
             }
         }
         catch (System.Exception e)
         {
-            // IF WEBGL BLOCKS IT, THIS WILL TELL US EXACTLY WHY!
             Debug.LogError("LỖI KHỞI TẠO UGS: " + e.Message);
+        }
+    }
+
+    private void Update()
+    {
+        if (m_IsKicked)
+        {
+            m_KickTimer -= Time.unscaledDeltaTime;
+            if (m_KickTimer <= 0f)
+            {
+                m_KickTimer = 999f;
+                ExecuteKickAndReload();
+            }
         }
     }
 
@@ -75,12 +104,10 @@ public class UGSManager : MonoBehaviour
     {
         try
         {
-            // 1. Kiểm tra xem tài khoản này đã từng tạo mã chưa
             string secureCode = SecurePrefs.GetString("TransferCode", "");
 
             if (string.IsNullOrEmpty(secureCode))
             {
-                // Lần đầu tiên tạo mã: Gắn mã OTP vĩnh viễn vào tài khoản
                 secureCode = GenerateSecureOTP();
                 await AuthenticationService.Instance.AddUsernamePasswordAsync(secureCode, SECRET_PASSWORD);
 
@@ -88,13 +115,7 @@ public class UGSManager : MonoBehaviour
                 SecurePrefs.Save();
             }
 
-            // 2. BẬT MÃ (Khởi động bộ đếm 5 phút)
-            // Dù là mã mới hay mã cũ, ta đều gia hạn nó thêm 5 phút trên Cloud!
-            DateTime expiryTime = DateTime.UtcNow.AddMinutes(5);
-            var data = new Dictionary<string, object> { { "OTP_Expiry", expiryTime.ToString("o") } };
-            await CloudSaveService.Instance.Data.Player.SaveAsync(data);
-
-            Debug.Log($"Tạo/Gia hạn mã thành công: {secureCode}. Hết hạn lúc: {expiryTime.ToLocalTime()}");
+            Debug.Log($"Mã khôi phục tài khoản của bạn là: {secureCode}");
             return secureCode;
         }
         catch (AuthenticationException ex)
@@ -104,59 +125,88 @@ public class UGSManager : MonoBehaviour
         }
     }
 
+    // === NEW: SAFE LOGIN SYSTEM ===
     public async void LoginWithTransferCode(string codeToUse)
+    {
+        try
+        {
+            string currentCode = SecurePrefs.GetString("TransferCode", "");
+
+            if (!string.IsNullOrEmpty(currentCode))
+            {
+                // SCENARIO 1: They already have an account. Backup their old data first!
+                if (GameManager.Instance != null)
+                {
+                    var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
+                    if (displayLabel != null) displayLabel.text = "Backing up old account...";
+                }
+
+                await ForceSyncCurrentAccountToCloud();
+                ProceedWithLogin(codeToUse);
+            }
+            else
+            {
+                // SCENARIO 2: They are a Guest. Show the warning screen!
+                m_PendingLoginCode = codeToUse;
+                m_IsShowingGuestWarning = true;
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Error starting login: " + e.Message);
+        }
+    }
+
+    private async Task ForceSyncCurrentAccountToCloud()
+    {
+        if (IsCloudSyncDisabled || !AuthenticationService.Instance.IsSignedIn) return;
+        try
+        {
+            var data = new Dictionary<string, object>
+            {
+                { "DeviceToken", m_LocalDeviceToken },
+                { "GameStatistics", SecurePrefs.GetString("GameStatistics", "") },
+                { "SavedMap", SecurePrefs.GetString("SavedMap", "") },
+                { "SavedDay", SecurePrefs.GetInt("SavedDay", 1) },
+                { "SavedFood", SecurePrefs.GetInt("SavedFood", 100) },
+                { "SavedChar", SecurePrefs.GetInt("SavedChar", 1) },
+                { "PlayerX", SecurePrefs.GetInt("PlayerX", 1) },
+                { "PlayerY", SecurePrefs.GetInt("PlayerY", 1) },
+                { "HasSave", SecurePrefs.GetInt("HasSave", 0) }
+            };
+            await CloudSaveService.Instance.Data.Player.SaveAsync(data);
+            Debug.Log("Old account backed up safely.");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("Failed to backup old account: " + e.Message);
+        }
+    }
+
+    private async void ProceedWithLogin(string codeToUse)
     {
         try
         {
             if (GameManager.Instance != null)
             {
                 var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
-                if (displayLabel != null) displayLabel.text = "Syncing Cloud Data... Please Wait...";
+                if (displayLabel != null) displayLabel.text = "Syncing New Cloud Data...";
             }
 
             if (AuthenticationService.Instance.IsSignedIn) AuthenticationService.Instance.SignOut();
 
-            // 1. Thử đăng nhập bằng mã
             await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(codeToUse, SECRET_PASSWORD);
 
-            // 2. KIỂM TRA ĐỒNG HỒ 5 PHÚT TRÊN CLOUD
-            var keys = new HashSet<string> { "OTP_Expiry" };
-            var savedData = await CloudSaveService.Instance.Data.Player.LoadAsync(keys);
+            // WIPE LOCAL MEMORY SO OLD STATS DON'T MERGE WITH THE NEW ACCOUNT
+            SecurePrefs.DeleteAll();
 
-            if (savedData.TryGetValue("OTP_Expiry", out var expiryItem))
-            {
-                DateTime expiryTime = DateTime.Parse(expiryItem.Value.GetAsString());
-
-                if (DateTime.UtcNow > expiryTime)
-                {
-                    Debug.LogError("Mã đã hết hạn (quá 5 phút)!");
-                    if (GameManager.Instance != null)
-                    {
-                        var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
-                        if (displayLabel != null) displayLabel.text = "Error: Code Expired!";
-                    }
-                    AuthenticationService.Instance.SignOut(); // Đá văng ra ngoài
-                    return;
-                }
-            }
-            else
-            {
-                // Nếu hacker mò ra mã nhưng mã chưa được kích hoạt hẹn giờ -> Chặn luôn!
-                Debug.LogError("Mã này đang bị đóng băng!");
-                AuthenticationService.Instance.SignOut();
-                return;
-            }
-
-            // 3. MÃ HỢP LỆ! Lưu lại mã vào máy mới và tải Save
-            Debug.Log("Mã hợp lệ! Đang tải dữ liệu...");
+            // Restore device ID and new transfer code
+            SecurePrefs.SetString("DeviceToken", m_LocalDeviceToken);
             SecurePrefs.SetString("TransferCode", codeToUse);
             SecurePrefs.Save();
 
             await SyncCloudToLocal(forceOverwriteCloudToken: true);
-
-            // 4. BURN AFTER READING (Đốt mã ngay lập tức)
-            await BurnCode();
-            Debug.Log("Chuyển máy thành công. Mã đã bị vô hiệu hóa.");
+            Debug.Log("Chuyển máy thành công.");
         }
         catch (System.Exception e)
         {
@@ -168,8 +218,7 @@ public class UGSManager : MonoBehaviour
             }
         }
     }
-
-    
+    // ===============================
 
     private async Task CheckAndSyncCloudToLocal()
     {
@@ -183,13 +232,10 @@ public class UGSManager : MonoBehaviour
             var keys = new HashSet<string> { "DeviceToken", "GameStatistics", "SavedMap", "SavedDay", "SavedFood", "SavedChar", "PlayerX", "PlayerY", "HasSave" };
             var savedData = await CloudSaveService.Instance.Data.Player.LoadAsync(keys);
 
-            // 1. Check if the token exists on the cloud
             if (!forceOverwriteCloudToken && savedData.TryGetValue("DeviceToken", out var cloudTokenItem))
             {
-                // 2. Check if we are a Guest
                 bool isGuest = string.IsNullOrEmpty(SecurePrefs.GetString("TransferCode", ""));
 
-                // 3. If we are NOT a guest, compare the tokens!
                 if (!isGuest)
                 {
                     string cloudToken = cloudTokenItem.Value.GetAsString();
@@ -234,8 +280,6 @@ public class UGSManager : MonoBehaviour
             if (savedData.TryGetValue("DeviceToken", out var cloudTokenItem))
             {
                 string cloudToken = cloudTokenItem.Value.GetAsString();
-
-                // === NEW FIX: Don't kick Guests! ===
                 bool isGuest = string.IsNullOrEmpty(SecurePrefs.GetString("TransferCode", ""));
 
                 if (!isGuest && cloudToken != m_LocalDeviceToken)
@@ -275,20 +319,14 @@ public class UGSManager : MonoBehaviour
 
     private void KickPlayerOut()
     {
-        // Changed to LogWarning so it doesn't freeze the Unity Editor!
         Debug.LogWarning("BỊ KICK: Tài khoản đã được đăng nhập ở máy khác!");
 
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.ShowKickPopup();
-        }
-        else
-        {
-            ExecuteKickAndReload();
-        }
+        m_IsKicked = true;
+        m_KickTimer = 5f;
+        Time.timeScale = 0f;
+        AudioListener.pause = true;
     }
 
-    // === NEW: The actual execution of the kick, called by the GameManager OK button! ===
     public void ExecuteKickAndReload()
     {
         if (UnityServices.State == Unity.Services.Core.ServicesInitializationState.Initialized)
@@ -297,50 +335,45 @@ public class UGSManager : MonoBehaviour
             {
                 AuthenticationService.Instance.SignOut();
             }
-            // Clear the old broken session!
             AuthenticationService.Instance.ClearSessionToken();
         }
 
-        // Wipe local memory and restart as a brand new Guest
         SecurePrefs.DeleteAll();
         m_LocalDeviceToken = System.Guid.NewGuid().ToString();
         SecurePrefs.SetString("DeviceToken", m_LocalDeviceToken);
         SecurePrefs.Save();
 
-        // === THE FIX ===
-        // Destroy the immortal UGSManager so a fresh one spawns!
+        // Let the game know it was kicked so it resets perfectly to a guest
+        PlayerPrefs.SetInt("JustKicked", 1);
+        PlayerPrefs.Save();
+
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+
         Instance = null;
         Destroy(gameObject);
-        // ===============
 
-        // Reload the scene
-        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
-    // ===================================================================================
 
     public async void DeleteCloudSave()
     {
         try
         {
-            // FIXED WARNING: Using the updated Unity API for deleting saves
             await CloudSaveService.Instance.Data.Player.DeleteAsync("HasSave", new Unity.Services.CloudSave.Models.Data.Player.DeleteOptions());
         }
         catch (System.Exception) { }
     }
 
-    // === NEW: HEARTBEAT SYSTEM ===
-    private System.Collections.IEnumerator HeartbeatRoutine()
+    private void OnApplicationFocus(bool hasFocus)
     {
-        // Wait a few seconds before starting the loop so it doesn't clash with the initial startup load
-        yield return new WaitForSeconds(5f);
+        if (UnityServices.State != Unity.Services.Core.ServicesInitializationState.Initialized) return;
 
-        while (true)
+        if (hasFocus && AuthenticationService.Instance.IsSignedIn)
         {
-            // Pause the script for 15 seconds, then check the cloud!
-            yield return new WaitForSeconds(15f);
-
-            if (AuthenticationService.Instance.IsSignedIn)
+            if (Time.time - m_LastFocusCheckTime > 2f)
             {
+                m_LastFocusCheckTime = Time.time;
                 CheckTokenSilently();
             }
         }
@@ -351,18 +384,14 @@ public class UGSManager : MonoBehaviour
         if (IsCloudSyncDisabled) return;
         try
         {
-            // We only download the DeviceToken to save bandwidth, not the whole save file!
             var keys = new HashSet<string> { "DeviceToken" };
             var savedData = await CloudSaveService.Instance.Data.Player.LoadAsync(keys);
 
             if (savedData.TryGetValue("DeviceToken", out var cloudTokenItem))
             {
                 string cloudToken = cloudTokenItem.Value.GetAsString();
-
-                // === NEW FIX: Don't kick Guests! ===
                 bool isGuest = string.IsNullOrEmpty(SecurePrefs.GetString("TransferCode", ""));
 
-                // If they are not a guest, and the token changed... KICK!
                 if (!isGuest && !string.IsNullOrEmpty(cloudToken) && cloudToken != m_LocalDeviceToken)
                 {
                     Debug.LogWarning("HEARTBEAT BÁO ĐỘNG: Phát hiện đăng nhập từ thiết bị khác!");
@@ -370,44 +399,9 @@ public class UGSManager : MonoBehaviour
                 }
             }
         }
-        catch (System.Exception)
-        {
-            // We leave this empty on purpose so the game doesn't crash if the internet flickers for a second!
-        }
+        catch (System.Exception) { }
     }
 
-
-    // =============================
-
-    // === THE HYBRID SOLUTION ===
-    // This built-in Unity function fires automatically whenever 
-    // the player minimizes the game, switches tabs, or clicks back into the window!
-    // === THE HYBRID SOLUTION ===
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        // === NEW FIX: Do not check anything if Unity Services haven't finished loading yet! ===
-        if (UnityServices.State != Unity.Services.Core.ServicesInitializationState.Initialized)
-        {
-            return;
-        }
-        // =======================================================================================
-
-        // If the player just clicked back into the game window...
-        if (hasFocus && AuthenticationService.Instance.IsSignedIn)
-        {
-            // === ANTI-SPAM COOLDOWN (FIXES THE 401 CORS ERROR) ===
-            // We only allow this security check to run if 2 seconds have passed since the last check.
-            // This prevents WebGL from firing 8 API requests at the exact same time!
-            if (Time.time - m_LastFocusCheckTime > 2f)
-            {
-                m_LastFocusCheckTime = Time.time;
-                Debug.Log("Player focused the window. Doing ONE quick security check...");
-                CheckTokenSilently();
-            }
-        }
-    }
-
-    // === BẢO MẬT: THUẬT TOÁN SINH SỐ NGẪU NHIÊN CHUẨN MÃ HÓA (CSPRNG) ===
     private string GenerateSecureOTP()
     {
         const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -426,19 +420,6 @@ public class UGSManager : MonoBehaviour
         return result.ToString();
     }
 
-    private async Task BurnCode()
-    {
-        // Đốt mã bằng cách đẩy thời gian hết hạn lùi về 1 ngày trước
-        // Bất cứ ai đăng nhập sau giây phút này đều sẽ bị văng ra vì thời gian báo "Đã quá hạn"
-        DateTime expiredTime = DateTime.UtcNow.AddDays(-1);
-        var data = new Dictionary<string, object> { { "OTP_Expiry", expiredTime.ToString("o") } };
-
-        await CloudSaveService.Instance.Data.Player.SaveAsync(data);
-    }
-
-    // === LEADERBOARD SYSTEM ===
-
-    // 1. Create a tiny class to hold the text so Unity can convert it to JSON!
     [System.Serializable]
     private class ScoreMetadata
     {
@@ -453,8 +434,6 @@ public class UGSManager : MonoBehaviour
         try
         {
             var run = StatisticsManager.Instance.CurrentRun;
-
-            // 1. Package the RAW facts (The server will do the math!)
             var arguments = new Dictionary<string, object>
             {
                 { "daysSurvived", run.DaysSurvived },
@@ -464,7 +443,6 @@ public class UGSManager : MonoBehaviour
                 { "metadataText", metadata }
             };
 
-            // 2. Send it to the unhackable Cloud Code script!
             string response = await CloudCodeService.Instance.CallEndpointAsync<string>("SubmitScoreSecurely", arguments);
             Debug.Log("Server Reply: " + response);
         }
@@ -474,13 +452,11 @@ public class UGSManager : MonoBehaviour
         }
     }
 
-    // === NEW UI TOOLKIT LEADERBOARD GENERATOR ===
     public async Task PopulateLeaderboardUI(VisualElement container)
     {
         if (container == null) return;
-        container.Clear(); // Wipe any old data
+        container.Clear();
 
-        // Show a loading message
         Label loadingLabel = new Label("Loading Leaderboard...");
         loadingLabel.style.color = Color.white;
         loadingLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
@@ -491,9 +467,8 @@ public class UGSManager : MonoBehaviour
         {
             var scoresResponse = await LeaderboardsService.Instance.GetScoresAsync("DailyLeaderboard", new GetScoresOptions { Limit = 10, IncludeMetadata = true });
 
-            container.Clear(); // Remove loading text
+            container.Clear();
 
-            // 1. CREATE HEADER ROW (Blue background)
             VisualElement headerRow = CreateRow("RANK", "PLAYER", "SCORE", "DETAILS", new Color(0.15f, 0.35f, 0.75f), true);
             container.Add(headerRow);
 
@@ -507,7 +482,6 @@ public class UGSManager : MonoBehaviour
                 return;
             }
 
-            // 2. CREATE DATA ROWS
             for (int i = 0; i < scoresResponse.Results.Count; i++)
             {
                 var entry = scoresResponse.Results[i];
@@ -518,7 +492,6 @@ public class UGSManager : MonoBehaviour
                 {
                     try
                     {
-                        // Safely unwrap the JSON object back into plain text
                         var parsedData = JsonUtility.FromJson<ScoreMetadata>(entry.Metadata);
                         if (parsedData != null && !string.IsNullOrEmpty(parsedData.details))
                         {
@@ -528,7 +501,6 @@ public class UGSManager : MonoBehaviour
                     catch { }
                 }
 
-                // Alternate row colors for that clean table look!
                 Color rowColor = (i % 2 == 0) ? new Color(0.1f, 0.15f, 0.3f) : new Color(0.08f, 0.12f, 0.25f);
 
                 VisualElement row = CreateRow($"{(entry.Rank + 1).ToString("00")}", playerName, $"{entry.Score}", metadataText, rowColor, false);
@@ -545,8 +517,6 @@ public class UGSManager : MonoBehaviour
         }
     }
 
-    // Helper method to generate a perfectly styled row block
-    // Helper method to generate a perfectly styled row block
     private VisualElement CreateRow(string rank, string name, string score, string details, Color bgColor, bool isHeader)
     {
         VisualElement row = new VisualElement();
@@ -566,42 +536,27 @@ public class UGSManager : MonoBehaviour
         row.style.borderTopLeftRadius = 8;
         row.style.borderTopRightRadius = 8;
 
-        // === FONT SIZE ADJUSTED TO FIT ===
-        // Size 28 and 24 are still huge, but will fit your long text!
         int fontSize = isHeader ? 28 : 24;
 
-        // Rank Column (10% width)
         row.Add(CreateColumnLabel(rank, 10, isHeader, TextAnchor.MiddleLeft, fontSize, Color.white));
-
-        // Name Column (20% width)
         row.Add(CreateColumnLabel(name, 20, isHeader, TextAnchor.MiddleLeft, fontSize, Color.white));
 
-        // Score Column (15% width)
         Color scoreColor = isHeader ? Color.white : new Color(0.3f, 0.9f, 0.5f);
         row.Add(CreateColumnLabel(score, 15, isHeader, TextAnchor.MiddleCenter, fontSize, scoreColor));
 
-        // Details Column (55% width)
         Color detailsColor = isHeader ? Color.white : new Color(0.8f, 0.8f, 0.8f);
-
-        // === CHANGED TO MIDDLE CENTER ===
         row.Add(CreateColumnLabel(details, 55, false, TextAnchor.MiddleCenter, fontSize, detailsColor));
 
         return row;
     }
 
-    // Helper method to generate individual text columns
-    // Helper method to generate individual text columns
     private Label CreateColumnLabel(string text, float widthPercent, bool isBold, TextAnchor alignment, int fontSize, Color fontColor)
     {
         Label lbl = new Label(text);
         lbl.style.width = Length.Percent(widthPercent);
         lbl.style.unityTextAlign = alignment;
         lbl.style.whiteSpace = WhiteSpace.NoWrap;
-
-        // === ADD THIS LINE TO PREVENT OVERLAPPING ===
         lbl.style.overflow = Overflow.Hidden;
-        // ============================================
-
         lbl.style.color = fontColor;
         lbl.style.fontSize = fontSize;
 
@@ -609,5 +564,72 @@ public class UGSManager : MonoBehaviour
 
         return lbl;
     }
-}
 
+    // === NEW: Handles BOTH the Kick Screen and the Guest Warning! ===
+    private void OnGUI()
+    {
+        if (m_IsKicked)
+        {
+            GUI.backgroundColor = Color.black;
+            GUI.Box(new Rect(0, 0, Screen.width, Screen.height), "");
+
+            GUIStyle titleStyle = new GUIStyle();
+            titleStyle.fontSize = 40;
+            titleStyle.normal.textColor = Color.red;
+            titleStyle.alignment = TextAnchor.MiddleCenter;
+            titleStyle.fontStyle = FontStyle.Bold;
+
+            GUI.Label(new Rect(0, Screen.height / 2 - 100, Screen.width, 100), "DISCONNECTED", titleStyle);
+
+            GUIStyle textStyle = new GUIStyle();
+            textStyle.fontSize = 24;
+            textStyle.normal.textColor = Color.white;
+            textStyle.alignment = TextAnchor.MiddleCenter;
+
+            int secondsLeft = Mathf.CeilToInt(m_KickTimer);
+            GUI.Label(new Rect(0, Screen.height / 2, Screen.width, 100), $"Your account was logged in from another device.\nYou have been logged out securely.\n\nReturning to Main Menu in {secondsLeft}...", textStyle);
+        }
+        else if (m_IsShowingGuestWarning)
+        {
+            // Dark transparent background
+            GUI.backgroundColor = new Color(0, 0, 0, 0.95f);
+            GUI.Box(new Rect(0, 0, Screen.width, Screen.height), "");
+
+            GUIStyle titleStyle = new GUIStyle();
+            titleStyle.fontSize = 36;
+            titleStyle.normal.textColor = Color.yellow;
+            titleStyle.alignment = TextAnchor.MiddleCenter;
+            titleStyle.fontStyle = FontStyle.Bold;
+
+            GUI.Label(new Rect(0, Screen.height / 2 - 150, Screen.width, 100), "WARNING: GUEST PROGRESS WILL BE LOST", titleStyle);
+
+            GUIStyle textStyle = new GUIStyle();
+            textStyle.fontSize = 24;
+            textStyle.normal.textColor = Color.white;
+            textStyle.alignment = TextAnchor.MiddleCenter;
+
+            GUI.Label(new Rect(0, Screen.height / 2 - 50, Screen.width, 100),
+                "If you log in now, all your current Guest progress will be permanently deleted!\n" +
+                "You should click 'Cancel', then click 'Generate Code' to save your progress first.\n\n" +
+                "Are you sure you want to delete your local progress and log in?", textStyle);
+
+            if (GUI.Button(new Rect(Screen.width / 2 - 210, Screen.height / 2 + 100, 200, 50), "OK (Delete Progress)"))
+            {
+                m_IsShowingGuestWarning = false;
+                ProceedWithLogin(m_PendingLoginCode);
+            }
+
+            if (GUI.Button(new Rect(Screen.width / 2 + 10, Screen.height / 2 + 100, 200, 50), "Cancel"))
+            {
+                m_IsShowingGuestWarning = false;
+                m_PendingLoginCode = "";
+
+                if (GameManager.Instance != null)
+                {
+                    var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
+                    if (displayLabel != null) displayLabel.text = "Login Cancelled.";
+                }
+            }
+        }
+    }
+}

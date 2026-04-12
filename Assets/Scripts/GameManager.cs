@@ -80,7 +80,6 @@ public class GameManager : MonoBehaviour
         Instance = this;
     }
 
-    // === STEP 2: EVENT DRIVEN ARCHITECTURE ===
     private void OnEnable()
     {
         GameEvents.OnFoodEaten += HandleFoodEaten;
@@ -93,16 +92,13 @@ public class GameManager : MonoBehaviour
 
     private void HandleFoodEaten(int amount, string foodName)
     {
-        // === MISSED FIX: Apply the specific Character's passive multiplier! ===
         if (PlayerController != null)
         {
             amount = PlayerController.CalculateFoodPickup(amount);
         }
-        // ======================================================================
 
         ChangeFood(amount);
     }
-    // =========================================
 
     void Start()
     {
@@ -251,6 +247,8 @@ public class GameManager : MonoBehaviour
 
     private void CloseGameOverAndReturnToMenu()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Returned to Main Menu from Game Over screen."); // === BREADCRUMB ===
+
         m_GameOverPanel.style.visibility = Visibility.Hidden;
         m_FoodLabel.style.visibility = Visibility.Hidden;
         m_DayLabel.style.visibility = Visibility.Hidden;
@@ -264,18 +262,24 @@ public class GameManager : MonoBehaviour
 
     private void PauseGame()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Paused Game (Pressed Escape)."); // === BREADCRUMB ===
+
         IsPaused = true;
         m_PauseMenuPanel.style.visibility = Visibility.Visible;
     }
 
     private void ResumeGame()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Resumed Game."); // === BREADCRUMB ===
+
         IsPaused = false;
         m_PauseMenuPanel.style.visibility = Visibility.Hidden;
     }
 
     private void ReturnToMainMenu()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Exit to Main Menu'."); // === BREADCRUMB ===
+
         SecurePrefs.SetInt("SavedDay", m_CurrentLevel);
         SecurePrefs.SetInt("SavedFood", m_FoodAmount);
         SecurePrefs.SetInt("SavedChar", SelectedCharacter);
@@ -306,18 +310,25 @@ public class GameManager : MonoBehaviour
 
     private void StartGameFromMenu()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Play' Button."); // === BREADCRUMB ===
+
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
         m_CharacterSelectionPanel.style.visibility = Visibility.Visible;
     }
 
     private void CancelCharacterSelection()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Back' on Character Select."); // === BREADCRUMB ===
+
         m_CharacterSelectionPanel.style.visibility = Visibility.Hidden;
         m_MainMenuPanel.style.visibility = Visibility.Visible;
     }
 
     private void ChooseCharacterAndPlay(int characterIndex)
     {
+        string charName = characterIndex == 1 ? "Bob" : (characterIndex == 2 ? "Steve" : "Caso");
+        GlobalErrorHandler.AddBreadcrumb($"UI: Chose Character ({charName})."); // === BREADCRUMB ===
+
         SelectedCharacter = characterIndex;
         m_CharacterSelectionPanel.style.visibility = Visibility.Hidden;
         m_FoodLabel.style.visibility = Visibility.Visible;
@@ -327,6 +338,8 @@ public class GameManager : MonoBehaviour
 
     private void ContinueSavedGame()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Continue Game'."); // === BREADCRUMB ===
+
         m_CurrentLevel = SecurePrefs.GetInt("SavedDay");
         m_FoodAmount = SecurePrefs.GetInt("SavedFood");
         SelectedCharacter = SecurePrefs.GetInt("SavedChar");
@@ -452,7 +465,6 @@ public class GameManager : MonoBehaviour
         {
             Vector3 spawnPos = position + new Vector3(0, 0.5f, -2f);
 
-            // USE THE POOLER INSTEAD OF INSTANTIATE!
             GameObject go = ObjectPooler.Instance.SpawnFromPool(FloatingTextPrefab, spawnPos);
 
             FloatingText ft = go.GetComponent<FloatingText>();
@@ -462,6 +474,8 @@ public class GameManager : MonoBehaviour
 
     private void OpenStatisticPanel()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Opened Statistic Panel."); // === BREADCRUMB ===
+
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
         m_StatisticPanel.style.display = DisplayStyle.Flex;
 
@@ -514,12 +528,16 @@ public class GameManager : MonoBehaviour
 
     private void CloseStatisticPanel()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Closed Statistic Panel."); // === BREADCRUMB ===
+
         m_StatisticPanel.style.display = DisplayStyle.None;
         m_MainMenuPanel.style.visibility = Visibility.Visible;
     }
 
     private async void OnGenerateCodeClicked()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Generate Code'."); // === BREADCRUMB ===
+
         if (UGSManager.Instance != null && m_CodeDisplayLabel != null)
         {
             m_CodeDisplayLabel.text = "Generating...";
@@ -540,6 +558,8 @@ public class GameManager : MonoBehaviour
 
     private void OnLoginCodeClicked()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Login with Code'."); // === BREADCRUMB ===
+
         if (UGSManager.Instance != null && m_InputCodeField != null)
         {
             string codeToUse = m_InputCodeField.value.Trim();
@@ -584,6 +604,8 @@ public class GameManager : MonoBehaviour
 
     private void OpenLeaderboard()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Opened Leaderboard."); // === BREADCRUMB ===
+
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
         m_LeaderboardPanel.style.display = DisplayStyle.Flex;
         if (UGSManager.Instance != null && m_LeaderboardContainer != null) _ = UGSManager.Instance.PopulateLeaderboardUI(m_LeaderboardContainer);
@@ -596,6 +618,8 @@ public class GameManager : MonoBehaviour
 
     private void CloseLeaderboard()
     {
+        GlobalErrorHandler.AddBreadcrumb("UI: Closed Leaderboard."); // === BREADCRUMB ===
+
         m_LeaderboardPanel.style.display = DisplayStyle.None;
         m_MainMenuPanel.style.visibility = Visibility.Visible;
     }
