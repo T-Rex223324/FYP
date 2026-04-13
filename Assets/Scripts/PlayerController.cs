@@ -72,9 +72,6 @@ public class PlayerController : MonoBehaviour
             m_MoveTarget = m_Board.CellToWorld(m_CellPosition);
 
             if (SoundManager.Instance != null) SoundManager.Instance.RandomizeSfx(MoveSounds);
-
-            // === BREADCRUMB: Log Movement ===
-            GlobalErrorHandler.AddBreadcrumb($"Moved to Tile {cell.x},{cell.y}");
         }
 
         m_Animator.SetBool("Moving", m_IsMoving);
@@ -97,7 +94,6 @@ public class PlayerController : MonoBehaviour
 
         if (SoundManager.Instance != null) SoundManager.Instance.RandomizeSfx(HitSounds);
 
-        // === BREADCRUMB: Log Damage ===
         GlobalErrorHandler.AddBreadcrumb($"Took {finalDamage} damage! Health/Food reduced.");
     }
 
@@ -115,13 +111,9 @@ public class PlayerController : MonoBehaviour
 
         if (m_IsGameOver)
         {
-            // We check for both the main Enter key and the Numpad Enter key just to be safe!
             if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame)
             {
-                // 1. Make sure the game isn't accidentally paused or frozen
                 Time.timeScale = 1f;
-
-                // 2. Bulletproof way to go back to the Main Menu!
                 UnityEngine.SceneManagement.SceneManager.LoadScene(0);
             }
             return;
@@ -146,33 +138,38 @@ public class PlayerController : MonoBehaviour
 
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            GlobalErrorHandler.AddBreadcrumb("Pressed Space (Skipped Turn).");
+            GlobalErrorHandler.AddBreadcrumb("Input: SPACE (Skipped Turn).");
             GameManager.Instance.TurnManager.Tick();
             return;
         }
 
         Vector2Int newCellTarget = m_CellPosition;
         bool hasMoved = false;
+        string actionKey = ""; // === NEW: Remember exactly which key they pressed ===
 
         if (Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame)
         {
             newCellTarget.y += 1;
             hasMoved = true;
+            actionKey = "W/Up";
         }
         else if (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame)
         {
             newCellTarget.y -= 1;
             hasMoved = true;
+            actionKey = "S/Down";
         }
         else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
         {
             newCellTarget.x += 1;
             hasMoved = true;
+            actionKey = "D/Right";
         }
         else if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
         {
             newCellTarget.x -= 1;
             hasMoved = true;
+            actionKey = "A/Left";
         }
 
         if (hasMoved)
@@ -197,6 +194,7 @@ public class PlayerController : MonoBehaviour
 
                 if (cellData.ContainedObject == null)
                 {
+                    GlobalErrorHandler.AddBreadcrumb($"Input: '{actionKey}' -> Moved to {newCellTarget.x},{newCellTarget.y}");
                     MoveTo(newCellTarget, false);
                 }
                 else
@@ -205,6 +203,7 @@ public class PlayerController : MonoBehaviour
 
                     if (canEnter)
                     {
+                        GlobalErrorHandler.AddBreadcrumb($"Input: '{actionKey}' -> Moved to {newCellTarget.x},{newCellTarget.y}");
                         MoveTo(newCellTarget, false);
                     }
                     else
@@ -216,8 +215,7 @@ public class PlayerController : MonoBehaviour
                             SoundManager.Instance.RandomizeSfx(AttackSounds);
                         }
 
-                        // === BREADCRUMB: Log Attack ===
-                        GlobalErrorHandler.AddBreadcrumb($"Attacked object at {newCellTarget.x},{newCellTarget.y}");
+                        GlobalErrorHandler.AddBreadcrumb($"Input: '{actionKey}' -> Attacked object at {newCellTarget.x},{newCellTarget.y}");
                     }
                 }
             }

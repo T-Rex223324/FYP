@@ -96,7 +96,6 @@ public class GameManager : MonoBehaviour
         {
             amount = PlayerController.CalculateFoodPickup(amount);
         }
-
         ChangeFood(amount);
     }
 
@@ -219,6 +218,8 @@ public class GameManager : MonoBehaviour
         if (m_LoginCodeButton != null) m_LoginCodeButton.clicked += OnLoginCodeClicked;
 
         if (m_StatisticPanel != null) m_StatisticPanel.style.display = DisplayStyle.None;
+
+        GlobalErrorHandler.AddBreadcrumb("Game Booted to Main Menu.");
     }
 
     private void Update()
@@ -247,8 +248,7 @@ public class GameManager : MonoBehaviour
 
     private void CloseGameOverAndReturnToMenu()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Returned to Main Menu from Game Over screen."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Returned to Main Menu from Game Over");
         m_GameOverPanel.style.visibility = Visibility.Hidden;
         m_FoodLabel.style.visibility = Visibility.Hidden;
         m_DayLabel.style.visibility = Visibility.Hidden;
@@ -262,24 +262,21 @@ public class GameManager : MonoBehaviour
 
     private void PauseGame()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Paused Game (Pressed Escape)."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Paused Game (Esc)");
         IsPaused = true;
         m_PauseMenuPanel.style.visibility = Visibility.Visible;
     }
 
     private void ResumeGame()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Resumed Game."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Resumed Game");
         IsPaused = false;
         m_PauseMenuPanel.style.visibility = Visibility.Hidden;
     }
 
     private void ReturnToMainMenu()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Exit to Main Menu'."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked Exit to Main Menu");
         SecurePrefs.SetInt("SavedDay", m_CurrentLevel);
         SecurePrefs.SetInt("SavedFood", m_FoodAmount);
         SecurePrefs.SetInt("SavedChar", SelectedCharacter);
@@ -310,16 +307,14 @@ public class GameManager : MonoBehaviour
 
     private void StartGameFromMenu()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Play' Button."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Play'");
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
         m_CharacterSelectionPanel.style.visibility = Visibility.Visible;
     }
 
     private void CancelCharacterSelection()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Back' on Character Select."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Back' in Character Select");
         m_CharacterSelectionPanel.style.visibility = Visibility.Hidden;
         m_MainMenuPanel.style.visibility = Visibility.Visible;
     }
@@ -327,7 +322,7 @@ public class GameManager : MonoBehaviour
     private void ChooseCharacterAndPlay(int characterIndex)
     {
         string charName = characterIndex == 1 ? "Bob" : (characterIndex == 2 ? "Steve" : "Caso");
-        GlobalErrorHandler.AddBreadcrumb($"UI: Chose Character ({charName})."); // === BREADCRUMB ===
+        GlobalErrorHandler.AddBreadcrumb($"UI: Selected Character ({charName})");
 
         SelectedCharacter = characterIndex;
         m_CharacterSelectionPanel.style.visibility = Visibility.Hidden;
@@ -338,7 +333,7 @@ public class GameManager : MonoBehaviour
 
     private void ContinueSavedGame()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Continue Game'."); // === BREADCRUMB ===
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Continue Game'");
 
         m_CurrentLevel = SecurePrefs.GetInt("SavedDay");
         m_FoodAmount = SecurePrefs.GetInt("SavedFood");
@@ -398,6 +393,7 @@ public class GameManager : MonoBehaviour
     public void NewLevel()
     {
         m_CurrentLevel++;
+        GlobalErrorHandler.AddBreadcrumb($"GAME: Reached Day {m_CurrentLevel}");
         if (m_DayLabel != null) m_DayLabel.text = "Day : " + m_CurrentLevel;
 
         if (m_CurrentLevel == 31)
@@ -474,8 +470,7 @@ public class GameManager : MonoBehaviour
 
     private void OpenStatisticPanel()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Opened Statistic Panel."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Opened Statistic Panel");
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
         m_StatisticPanel.style.display = DisplayStyle.Flex;
 
@@ -493,23 +488,18 @@ public class GameManager : MonoBehaviour
             $"Greatest Attempt: <color=#FFFFFF>{bestRunText}</color>\n" +
             $"Longest Survival: <color=#FFFFFF>Day {lifetime.HighestDaySurvived}</color>\n" +
             $"Highest Food: <color=#FFFFFF>{lifetime.HighestFoodHeld}</color> | Most Kills: <color=#FFFFFF>{lifetime.MostMonstersKilledInOneRun}</color> | Most Mined: <color=#FFFFFF>{lifetime.MostWallsBrokenInOneRun}</color>\n\n" +
-
             $"<color=#38BDF8><b>--- LIFETIME TOTALS ---</b></color>\n" +
             $"Total Runs: <color=#FFFFFF>{lifetime.TotalRuns}</color> | Wins: <color=#FFFFFF>{lifetime.TotalWins}</color> | Steps: <color=#FFFFFF>{lifetime.TotalSteps}</color>\n\n" +
-
             $"<color=#4ADE80><b>--- FOOD CONSUMED (Total: {lifetime.TotalFoodEaten}) ---</b></color>\n" +
             $"Fruit: {lifetime.FruitEaten} | Soda: {lifetime.SodaDrank} | Burger: {lifetime.BurgersEaten}\n" +
             $"Chicken: {lifetime.ChickenEaten} | Fish: {lifetime.FishEaten} | Salad: {lifetime.SaladEaten}\n\n" +
-
             $"<color=#A78BFA><b>--- WALLS DESTROYED (Total: {lifetime.TotalWallsBroken}) ---</b></color>\n" +
             $"Dirt: {lifetime.NormalWallBroken} | Dirt V2: {lifetime.WallType2Broken} | Dirt V3: {lifetime.WallType3Broken}\n" +
             $"Cactus: {lifetime.CactusBroken} | Cactus V2: {lifetime.CactusType2Broken} | Cactus V3: {lifetime.CactusType3Broken}\n" +
             $"Pink Rock: {lifetime.PinkRockBroken}\n\n" +
-
             $"<color=#F87171><b>--- MONSTERS DEFEATED (Total: {lifetime.TotalMonstersKilled}) ---</b></color>\n" +
             $"Zombie: {lifetime.ZombieKilled} | Elite: {lifetime.EliteZombieKilled} | Mummy: {lifetime.MummyKilled}\n" +
             $"Fly-GH28: {lifetime.FlyGH28Killed} | Slime: {lifetime.SlimeKilled} | Mutant: {lifetime.MutantSlimeKilled}\n\n" +
-
             $"Damage Taken: <color=#FF8A65>{lifetime.TotalHitsTaken}</color>";
 
         if (m_CodeDisplayLabel != null)
@@ -528,16 +518,14 @@ public class GameManager : MonoBehaviour
 
     private void CloseStatisticPanel()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Closed Statistic Panel."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Closed Statistic Panel");
         m_StatisticPanel.style.display = DisplayStyle.None;
         m_MainMenuPanel.style.visibility = Visibility.Visible;
     }
 
     private async void OnGenerateCodeClicked()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Generate Code'."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Generate Code'");
         if (UGSManager.Instance != null && m_CodeDisplayLabel != null)
         {
             m_CodeDisplayLabel.text = "Generating...";
@@ -558,8 +546,7 @@ public class GameManager : MonoBehaviour
 
     private void OnLoginCodeClicked()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Login with Code'."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Clicked 'Login with Code'");
         if (UGSManager.Instance != null && m_InputCodeField != null)
         {
             string codeToUse = m_InputCodeField.value.Trim();
@@ -604,8 +591,7 @@ public class GameManager : MonoBehaviour
 
     private void OpenLeaderboard()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Opened Leaderboard."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Opened Leaderboard");
         m_MainMenuPanel.style.visibility = Visibility.Hidden;
         m_LeaderboardPanel.style.display = DisplayStyle.Flex;
         if (UGSManager.Instance != null && m_LeaderboardContainer != null) _ = UGSManager.Instance.PopulateLeaderboardUI(m_LeaderboardContainer);
@@ -618,8 +604,7 @@ public class GameManager : MonoBehaviour
 
     private void CloseLeaderboard()
     {
-        GlobalErrorHandler.AddBreadcrumb("UI: Closed Leaderboard."); // === BREADCRUMB ===
-
+        GlobalErrorHandler.AddBreadcrumb("UI: Closed Leaderboard");
         m_LeaderboardPanel.style.display = DisplayStyle.None;
         m_MainMenuPanel.style.visibility = Visibility.Visible;
     }

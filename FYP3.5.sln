@@ -189,8 +189,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.2D.SpriteShape.Runtim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.Core", "Unity.VisualScripting.Core.Player.csproj", "{83039446-98F4-D7A0-51A4-0C1CE6084DD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "unity-websocket-sharp", "unity-websocket-sharp.Player.csproj", "{DC421816-9168-1BB2-EA5D-6E94BAAFBE3E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Services.Core", "Unity.Services.Core.Player.csproj", "{9C52569F-1176-B07D-1806-963EDE630EE8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VisualScripting.Flow", "Unity.VisualScripting.Flow.Player.csproj", "{FAC2990A-30E2-BA02-EF64-09B28225C672}"
@@ -619,10 +617,6 @@ Global
 		{83039446-98F4-D7A0-51A4-0C1CE6084DD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83039446-98F4-D7A0-51A4-0C1CE6084DD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83039446-98F4-D7A0-51A4-0C1CE6084DD7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC421816-9168-1BB2-EA5D-6E94BAAFBE3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC421816-9168-1BB2-EA5D-6E94BAAFBE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC421816-9168-1BB2-EA5D-6E94BAAFBE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC421816-9168-1BB2-EA5D-6E94BAAFBE3E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9C52569F-1176-B07D-1806-963EDE630EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9C52569F-1176-B07D-1806-963EDE630EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C52569F-1176-B07D-1806-963EDE630EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU

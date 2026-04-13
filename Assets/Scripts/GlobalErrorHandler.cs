@@ -4,6 +4,7 @@ using UnityEngine.Networking;
 using System.Collections.Generic;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
+using System.IO; // Needed for File Management!
 
 public class GlobalErrorHandler : MonoBehaviour
 {
@@ -18,10 +19,19 @@ public class GlobalErrorHandler : MonoBehaviour
     private float m_Countdown = 30f;
 
     private static Queue<string> s_Breadcrumbs = new Queue<string>();
-    private const string OFFLINE_REPORTS_KEY = "OfflineCrashReports";
+
+    // Updated Key
+    private const string OFFLINE_REPORTS_KEY = "OfflineCrashDataV3";
 
     [System.Serializable]
-    private class OfflineReportList { public List<string> Reports = new List<string>(); }
+    private class OfflineCrashData
+    {
+        public string DiscordMessage;
+        public string FilePath; // We now store the PATH, not the giant text!
+    }
+
+    [System.Serializable]
+    private class OfflineReportList { public List<OfflineCrashData> Reports = new List<OfflineCrashData>(); }
 
     public static void AddBreadcrumb(string actionMessage)
     {
@@ -77,43 +87,70 @@ public class GlobalErrorHandler : MonoBehaviour
         string playerId = SystemInfo.deviceUniqueIdentifier;
         try { if (UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn) playerId = AuthenticationService.Instance.PlayerId; } catch { }
 
-        // === THE FIX: Increased the limit from 1200 to 1600 to show more code! ===
-        if (m_StackTrace.Length > 1600)
-        {
-            m_StackTrace = m_StackTrace.Substring(0, 1600) + "\n...[TRUNCATED TO FIT DISCORD LIMIT]";
-        }
-
         string breadcrumbText = s_Breadcrumbs.Count > 0 ? string.Join("\n", s_Breadcrumbs) : "No actions recorded.";
 
-        // === THE FIX: Compressed Layout to save space for the Stack Trace! ===
+        string fullLogContent = $"CRITICAL CRASH REPORT\n\nPlayer ID: {playerId}\nScene: {activeScene}\nTime: {Time.realtimeSinceStartup:F1}s\n\nERROR:\n{m_ErrorMessage}\n\nLAST 10 ACTIONS:\n{breadcrumbText}\n\nFULL STACK TRACE:\n{m_StackTrace}";
+
+        string shortStack = m_StackTrace;
+        if (shortStack.Length > 1000)
+        {
+            shortStack = shortStack.Substring(0, 1000) + "\n...[TRUNCATED: SEE ATTACHED TEXT FILE FOR FULL TRACE]";
+        }
+
         string detailedMessage =
             $"🚨 **CRASH:** `{m_ErrorMessage}`\n" +
             $"👤 `ID: {playerId}` | 🗺️ `Scene: {activeScene}` | ⏱️ `{Time.realtimeSinceStartup:F1}s`\n" +
             $"🐾 **Last 10 Actions:**\n```text\n{breadcrumbText}\n```\n" +
-            $"📍 **Stack Trace:**\n```cs\n{m_StackTrace}\n```";
+            $"📍 **Stack Trace:**\n```cs\n{shortStack}\n```";
 
-        yield return StartCoroutine(SendToDiscord(detailedMessage, true));
+        yield return StartCoroutine(SendToDiscord(detailedMessage, fullLogContent, true));
     }
 
-    private IEnumerator SendToDiscord(string messagePayload, bool saveIfOffline)
+    private IEnumerator SendToDiscord(string messagePayload, string fileContent, bool saveIfOffline)
     {
         WWWForm form = new WWWForm();
         form.AddField("content", messagePayload);
+
+        if (!string.IsNullOrEmpty(fileContent))
+        {
+            byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(fileContent);
+            form.AddBinaryData("file", fileBytes, "Full_CrashLog.txt", "text/plain");
+        }
+
         using (UnityWebRequest www = UnityWebRequest.Post(DiscordWebhookURL, form))
         {
             yield return www.SendWebRequest();
-            if (www.result != UnityWebRequest.Result.Success && saveIfOffline) SaveReportOffline(messagePayload);
+
+            // === THE FIX: Only touch the Hard Drive if the internet fails! ===
+            if (www.result != UnityWebRequest.Result.Success && saveIfOffline)
+            {
+                try
+                {
+                    // Create a unique file name using the current time
+                    string fileName = "CrashLog_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+                    string filePath = Path.Combine(Application.persistentDataPath, fileName);
+
+                    // Save the file physically to the computer
+                    File.WriteAllText(filePath, fileContent);
+
+                    // Tell the system to remember where we put this file
+                    SaveReportOffline(messagePayload, filePath);
+                }
+                catch { /* Ignore if hard drive access is blocked */ }
+            }
         }
     }
 
-    private void SaveReportOffline(string payload)
+    private void SaveReportOffline(string payload, string filePath)
     {
         OfflineReportList list = new OfflineReportList();
         string existingJson = PlayerPrefs.GetString(OFFLINE_REPORTS_KEY, "");
         if (!string.IsNullOrEmpty(existingJson)) try { list = JsonUtility.FromJson<OfflineReportList>(existingJson); } catch { }
 
         string offlinePayload = payload.Replace("🚨 **CRASH:**", "📡 **[OFFLINE RECOVERY] CRASH:**");
-        list.Reports.Add(offlinePayload);
+
+        list.Reports.Add(new OfflineCrashData { DiscordMessage = offlinePayload, FilePath = filePath });
+
         PlayerPrefs.SetString(OFFLINE_REPORTS_KEY, JsonUtility.ToJson(list));
         PlayerPrefs.Save();
     }
@@ -129,15 +166,37 @@ public class GlobalErrorHandler : MonoBehaviour
 
         if (list.Reports.Count > 0)
         {
-            List<string> failedReports = new List<string>();
-            foreach (string report in list.Reports)
+            List<OfflineCrashData> failedReports = new List<OfflineCrashData>();
+            foreach (var report in list.Reports)
             {
                 WWWForm form = new WWWForm();
-                form.AddField("content", report);
+                form.AddField("content", report.DiscordMessage);
+
+                // Try to find the physical file on the hard drive
+                if (!string.IsNullOrEmpty(report.FilePath) && File.Exists(report.FilePath))
+                {
+                    string fileContent = File.ReadAllText(report.FilePath);
+                    byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(fileContent);
+                    form.AddBinaryData("file", fileBytes, "Full_CrashLog.txt", "text/plain");
+                }
+
                 using (UnityWebRequest www = UnityWebRequest.Post(DiscordWebhookURL, form))
                 {
                     yield return www.SendWebRequest();
-                    if (www.result != UnityWebRequest.Result.Success) failedReports.Add(report);
+
+                    if (www.result != UnityWebRequest.Result.Success)
+                    {
+                        failedReports.Add(report); // Still no internet, keep it!
+                    }
+                    else
+                    {
+                        // === THE FIX: Successfully sent! Delete the physical file! ===
+                        try
+                        {
+                            if (File.Exists(report.FilePath)) File.Delete(report.FilePath);
+                        }
+                        catch { }
+                    }
                 }
                 yield return new WaitForSeconds(1f);
             }
