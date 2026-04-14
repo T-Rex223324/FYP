@@ -75,6 +75,7 @@
     <Compile Include="Assets\Scripts\StatisticsManager.cs" />
     <Compile Include="Assets\Scripts\UGSManager.cs" />
     <Compile Include="Assets\Scripts\GlobalErrorHandler.cs" />
+    <Compile Include="Assets\Unity.VisualScripting.Generated\VisualScripting.Core\AotStubs.cs" />
     <Compile Include="Assets\Scripts\SoundManager.cs" />
     <Compile Include="Assets\Scripts\CameraShake.cs" />
     <Compile Include="Assets\Scripts\ObjectPooler.cs" />
@@ -86,6 +87,7 @@
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
     <None Include="Assets\Roguelike2D\TutorialAssets\Fonts\OFL.txt" />
+    <None Include="Assets\Unity.VisualScripting.Generated\VisualScripting.Core\link.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />

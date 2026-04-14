@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.TextCore.Text;
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
+using System.Runtime.InteropServices;
 
 public class GameManager : MonoBehaviour
 {
@@ -114,6 +115,9 @@ public class GameManager : MonoBehaviour
 
         m_ContinueButton = m_MainMenuPanel.Q<Button>("ContinueButton");
         m_ExitButton = m_MainMenuPanel?.Q<Button>("ExitButton");
+#if UNITY_WEBGL
+        if (m_ExitButton != null) m_ExitButton.style.display = DisplayStyle.None;
+#endif
         m_ExitConfirmPanel = UIDoc.rootVisualElement.Q<VisualElement>("ExitConfirmPanel");
         m_ConfirmExitYesButton = m_ExitConfirmPanel?.Q<Button>("ConfirmExitYesButton");
         m_ConfirmExitNoButton = m_ExitConfirmPanel?.Q<Button>("ConfirmExitNoButton");
@@ -535,11 +539,20 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    [DllImport("__Internal")]
+    private static extern void CopyToClipboard(string text);
+
     private void CopyCodeToClipboard()
     {
         if (!string.IsNullOrEmpty(m_GeneratedCode))
         {
+            // If playing on the Web, use the Javascript Plugin!
+#if UNITY_WEBGL && !UNITY_EDITOR
+            CopyToClipboard(m_GeneratedCode);
+#else
+            // If playing in the Editor or on Desktop, use normal Unity code!
             GUIUtility.systemCopyBuffer = m_GeneratedCode;
+#endif
             if (m_CopyCodeButton != null) m_CopyCodeButton.text = "Copied!";
         }
     }
@@ -621,7 +634,10 @@ public class GameManager : MonoBehaviour
 
     private void ExecuteExit()
     {
+#if !UNITY_WEBGL
         Application.Quit();
+#endif
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif

@@ -126,34 +126,39 @@ public class UGSManager : MonoBehaviour
     }
 
     // === NEW: SAFE LOGIN SYSTEM ===
+    // === FIX 1: THE MAIN LOGIN FUNCTION ===
     public async void LoginWithTransferCode(string codeToUse)
     {
         try
         {
-            string currentCode = SecurePrefs.GetString("TransferCode", "");
-
-            if (!string.IsNullOrEmpty(currentCode))
+            if (GameManager.Instance != null)
             {
-                // SCENARIO 1: They already have an account. Backup their old data first!
-                if (GameManager.Instance != null)
-                {
-                    var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
-                    if (displayLabel != null) displayLabel.text = "Backing up old account...";
-                }
+                var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
+                if (displayLabel != null) displayLabel.text = "Syncing Cloud Data... Please Wait...";
+            }
 
-                await ForceSyncCurrentAccountToCloud();
-                ProceedWithLogin(codeToUse);
-            }
-            else
-            {
-                // SCENARIO 2: They are a Guest. Show the warning screen!
-                m_PendingLoginCode = codeToUse;
-                m_IsShowingGuestWarning = true;
-            }
+            if (AuthenticationService.Instance.IsSignedIn) AuthenticationService.Instance.SignOut();
+
+            // 1. Sign in using their permanent Transfer Code
+            await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(codeToUse, SECRET_PASSWORD);
+
+            // 2. Save the code to this device so they stay logged in
+            SecurePrefs.SetString("TransferCode", codeToUse);
+            SecurePrefs.Save();
+
+            Debug.Log($"Đăng nhập thành công với mã: {codeToUse}");
+
+            // 3. Download the player's save file and restart!
+            await SyncCloudToLocal(forceOverwriteCloudToken: true);
         }
         catch (System.Exception e)
         {
-            Debug.LogError("Error starting login: " + e.Message);
+            Debug.LogError("Mã không hợp lệ: " + e.Message);
+            if (GameManager.Instance != null)
+            {
+                var displayLabel = GameManager.Instance.UIDoc.rootVisualElement.Q<Label>("CodeDisplayLabel");
+                if (displayLabel != null) displayLabel.text = "Error: Invalid Code!";
+            }
         }
     }
 
@@ -183,6 +188,7 @@ public class UGSManager : MonoBehaviour
         }
     }
 
+    // === FIX 2: THE GUEST WARNING LOGIN FUNCTION ===
     private async void ProceedWithLogin(string codeToUse)
     {
         try
@@ -195,18 +201,21 @@ public class UGSManager : MonoBehaviour
 
             if (AuthenticationService.Instance.IsSignedIn) AuthenticationService.Instance.SignOut();
 
+            // 1. Sign in using their permanent Transfer Code
             await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(codeToUse, SECRET_PASSWORD);
 
-            // WIPE LOCAL MEMORY SO OLD STATS DON'T MERGE WITH THE NEW ACCOUNT
+            // 2. WIPE LOCAL GUEST MEMORY so it doesn't mix with the downloaded cloud save
             SecurePrefs.DeleteAll();
 
-            // Restore device ID and new transfer code
+            // 3. Save the new Device ID and their permanent Transfer Code
             SecurePrefs.SetString("DeviceToken", m_LocalDeviceToken);
             SecurePrefs.SetString("TransferCode", codeToUse);
             SecurePrefs.Save();
 
+            Debug.Log("Chuyển máy thành công!");
+
+            // 4. Download the player's save file and restart!
             await SyncCloudToLocal(forceOverwriteCloudToken: true);
-            Debug.Log("Chuyển máy thành công.");
         }
         catch (System.Exception e)
         {
@@ -218,7 +227,6 @@ public class UGSManager : MonoBehaviour
             }
         }
     }
-    // ===============================
 
     private async Task CheckAndSyncCloudToLocal()
     {
