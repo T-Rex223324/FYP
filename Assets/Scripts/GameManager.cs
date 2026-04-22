@@ -230,22 +230,34 @@ public class GameManager : MonoBehaviour
     {
         if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
+            // === SCENARIO 1: We are looking at the Main Menu ===
             if (m_MainMenuPanel != null && m_MainMenuPanel.style.visibility == Visibility.Visible)
             {
                 if (m_ExitConfirmPanel != null)
                 {
+                    // If the quit box is hidden, show it! If it's showing, hide it!
                     if (m_ExitConfirmPanel.style.display == DisplayStyle.None) ShowExitConfirmation();
                     else CancelExit();
                 }
             }
-            else if (m_MainMenuPanel.style.visibility == Visibility.Hidden &&
-                     m_GameOverPanel.style.visibility == Visibility.Hidden &&
-                     m_CharacterSelectionPanel.style.visibility == Visibility.Hidden &&
-                     (m_StatisticPanel == null || m_StatisticPanel.style.display == DisplayStyle.None) &&
-                     (m_LeaderboardPanel == null || m_LeaderboardPanel.style.display == DisplayStyle.None))
+            // === SCENARIO 2: We are looking at a Sub-Menu (Leaderboard, Stats, Char Select) ===
+            else if (m_MainMenuPanel.style.visibility == Visibility.Hidden && m_GameOverPanel.style.visibility == Visibility.Hidden)
             {
-                if (IsPaused) ResumeGame();
-                else PauseGame();
+                // If the game is actually running (meaning no menus are open at all), toggle Pause!
+                if (m_CharacterSelectionPanel.style.visibility == Visibility.Hidden &&
+                    (m_StatisticPanel == null || m_StatisticPanel.style.display == DisplayStyle.None) &&
+                    (m_LeaderboardPanel == null || m_LeaderboardPanel.style.display == DisplayStyle.None))
+                {
+                    if (IsPaused) ResumeGame();
+                    else PauseGame();
+                }
+                // Otherwise, we are in a sub-menu! Pressing ESC should just send us back to the Main Menu.
+                else
+                {
+                    if (m_CharacterSelectionPanel.style.visibility == Visibility.Visible) CancelCharacterSelection();
+                    if (m_StatisticPanel != null && m_StatisticPanel.style.display == DisplayStyle.Flex) CloseStatisticPanel();
+                    if (m_LeaderboardPanel != null && m_LeaderboardPanel.style.display == DisplayStyle.Flex) CloseLeaderboard();
+                }
             }
         }
     }

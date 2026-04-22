@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>30 Days Underground | Web Edition</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <script>
+      function copyTransferCode() {
+        var copyText = document.getElementById("transferCodeDisplay").innerText;
+        var tempInput = document.createElement("textarea");
+        tempInput.value = copyText;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        alert("Copied code: " + copyText);
+      }
+    </script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #e0e0e0;
+        
+        background-color: #1a1a2e; 
+        background-image: url('backgrounds/main_bg.png'); 
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .site-container {
+        width: 100%;
+        max-width: 1000px;
+        background: rgba(20, 20, 35, 0.95);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+        border: 1px solid #303050;
+        overflow: hidden;
+        margin: 40px 0;
+        border-radius: 12px;
+      }
+
+      /* === HEADER WITH SCHOOL LOGO === */
+      header {
+        position: relative; 
+        padding: 30px 40px;
+        background: rgba(0,0,0,0.7);
+        border-bottom: 2px solid #4da6ff;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 36px;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+      }
+      .school-logo {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        height: 55px; 
+        object-fit: contain;
+      }
+
+      #unity-container.unity-desktop {
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+        margin: 0 auto;
+      }
+
+      .game-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 30px 0;
+        background: #000;
+        border-bottom: 2px solid #303050;
+      }
+
+      .content-container {
+        padding: 40px 50px;
+      }
+
+      .info-block {
+        display: flex;
+        align-items: center;
+        margin-bottom: 60px;
+        gap: 40px;
+      }
+      
+      .text-content {
+        flex: 1.6;
+      }
+      .image-content {
+        flex: 1;
+        text-align: center;
+      }
+
+      .info-block.reverse {
+        flex-direction: row-reverse;
+      }
+
+      h2 {
+        color: #4da6ff;
+        font-size: 28px;
+        border-bottom: 2px solid #303050;
+        padding-bottom: 8px;
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+      
+      p, li {
+        line-height: 1.6;
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: #d1d5db;
+      }
+
+      ul {
+        margin-top: 0;
+        padding-left: 20px;
+      }
+
+      .game-screenshot {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+        border: 2px solid #303050;
+        transition: transform 0.2s;
+      }
+      .game-screenshot:hover {
+        transform: scale(1.05);
+      }
+      
+      .transfer-id {
+        font-family: monospace;
+        background-color: #0d0d1a;
+        padding: 12px 18px;
+        border-radius: 5px;
+        border: 1px dashed #4da6ff;
+        color: #fff;
+        font-size: 18px;
+        display: inline-block;
+        margin: 10px 0;
+      }
+      .copy-btn {
+        background-color: #4da6ff;
+        color: #fff;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+        margin-left: 10px;
+      }
+      .copy-btn:hover {
+        background-color: #1a75ff;
+      }
+
+      /* === ITCH.IO STYLE DOWNLOAD SECTION === */
+      .download-section {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 30px;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+      .download-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px 20px;
+        border-radius: 6px;
+        border: 1px solid #303050;
+        margin-top: 15px;
+      }
+      .dl-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .dl-btn {
+        background-color: #8b0000; 
+        color: #fff;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        padding: 12px 25px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+      .dl-btn:hover {
+        background-color: #b30000;
+      }
+      .dl-filename {
+        font-size: 18px;
+        font-weight: 500;
+        color: #fff;
+      }
+      .dl-size {
+        font-size: 16px;
+        color: #9ca3af;
+      }
+
+      footer {
+        text-align: center;
+        padding: 25px;
+        font-size: 14px;
+        color: #505070;
+        background: rgba(0,0,0,0.8);
+      }
+    </style>
+  </head>
+  
+  <body>
+    <div class="site-container">
+      
+      <header>
+        <img src="backgrounds/school_logo.png" alt="University Logo" class="school-logo">
+        <h1>30 Days Underground</h1>
+      </header>
+
+      <div class="game-wrapper">
+        <div id="unity-container" class="unity-desktop">
+          <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+          <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+              <div id="unity-progress-bar-full"></div>
+            </div>
+          </div>
+          <div id="unity-warning"> </div>
+          <div id="unity-footer">
+            <div id="unity-logo-title-footer"></div>
+            <div id="unity-fullscreen-button"></div>
+            <div id="unity-build-title">FYP2.0</div>
+          </div>
+        </div>
+      </div>
+
+      <main class="content-container">
+
+        <section class="info-block">
+          <div class="text-content">
+            <h2>Story</h2>
+            <p>Your dream was to be an adventurer. You were out questing one day when the earth gave way, dropping you into a deep, shifting subterranean maze.</p>
+            <p>The exit is nowhere to be found, and your food supply is rapidly dwindling. To see the sun again, you must dig deeper into the dungeon's heart, manage your precious resources, and survive for 30 grueling days against mutant slimes, mummies, and the dreaded Elite Zombies.</p>
+            <p>Gather your strength, choose your hero, and find the Exit Gate. Victory awaits those brave enough to dig deeper.</p>
+          </div>
+          <div class="image-content">
+            <img src="backgrounds/Screenshot 2026-04-22 140358.png" class="game-screenshot" alt="Urban Level">
+          </div>
+        </section>
+
+        <section class="info-block reverse">
+          <div class="image-content">
+            <img src="backgrounds/Screenshot 2026-04-22 140536.png" class="game-screenshot" alt="Sand Level">
+          </div>
+          <div class="text-content">
+            <h2>Gameplay & Controls</h2>
+            <p><strong>30 Days Underground</strong> is a challenging but accessible survival roguelike. There's no timer to rush you, so take things at your own pace!</p>
+            <ul>
+              <li><strong>Movement:</strong> Use <strong>[W,A,S,D]</strong> or <strong>[Arrow Keys]</strong> to move. Every step drains your Food meter. If it reaches zero, you die!</li>
+              <li><strong>Attacking & Mining:</strong> Just move directly into an enemy to attack them, or into a wall to break it!</li>
+              <li><strong>Skip Turn:</strong> Press <strong>[Space]</strong> to stay in place and let enemies move.</li>
+              <li><strong>Select Your Hero:</strong> Choose between Bob, Steve, or Caso—each with unique stats to help you brave the depths.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="info-block">
+          <div class="text-content">
+            <h2>Survive the Biomes</h2>
+            <p>We buck the trends of traditional endless games by giving you a clear, finite goal: Survive 30 Days.</p>
+            <p>As you progress, the environment will shift and become more dangerous. You will start in the ruined <strong>Urban</strong> underground, push through the scorching <strong>Sand</strong> caves, and finally brave the frozen <strong>Snow</strong> depths.</p>
+            <p>New enemies like the Fly-GH28 and Mutant Slimes will test your tactical positioning on the later floors!</p>
+          </div>
+          <div class="image-content">
+            <img src="backgrounds/Screenshot 2026-04-22 140613.png" class="game-screenshot" alt="Snow Level">
+          </div>
+        </section>
+
+        <section class="info-block data-transfer reverse">
+          <div class="text-content" style="flex: 1;">
+            <h2>Cross-Platform Cloud Saving</h2>
+            <p>Your save data is secured using your unique <strong>Permanent Recovery ID (Transfer Code)</strong>. This code acts as your official Username and can be used to load your exact save on any browser or computer in the world.</p>
+            <p>To transfer your data between the Web version and the Desktop App, simply copy your code from the <strong style="color: #4da6ff">Statistic Menu</strong> and click <strong style="color: #4da6ff">"Login with Code"</strong> on your new device!</p>
+            
+            <div style="margin-top: 15px;">
+              <span class="transfer-id" id="transferCodeDisplay">30D-XXXX-XXXX</span>
+              <button class="copy-btn" onclick="copyTransferCode()">Copy Example</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="download-section">
+          <h2 style="border: none; color: #fff;">Download the Game</h2>
+          <p>Want better performance, full-screen graphics, and offline support? Download the official Windows Desktop Application below!</p>
+          
+          <div class="download-box">
+            <div class="dl-left">
+              <a href="https://drive.google.com/file/d/1lIEcpH0ftnkCojkqqD7ohSiBy5xQPVW5/view?usp=drive_link" target="_blank" class="dl-btn">Download</a>
+              <span class="dl-filename">30DaysUnderground_Win.zip</span>
+            </div>
+            <div class="dl-right">
+              <span class="dl-size">145 MB</span>
+            </div>
+          </div>
+
+        </section>
+
+      </main>
+
+      <footer>
+        30 Days Underground © 2026 | Built for WebGL & Windows
+      </footer>
+
+    </div>
+
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/Web.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/Web.data.unityweb",
+        frameworkUrl: buildUrl + "/Web.framework.js.unityweb",
+        codeUrl: buildUrl + "/Web.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "FYP2.0",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
+        canvas.className = "unity-mobile";
+      } else {
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
+      }
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                document.querySelector("#unity-loading-bar").style.display = "none";
+                document.querySelector("#unity-fullscreen-button").onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+
+              }).catch((message) => {
+                alert(message);
+              });
+            };
+
+      document.body.appendChild(script);
+
+    </script>
+  </body>
+</html>
